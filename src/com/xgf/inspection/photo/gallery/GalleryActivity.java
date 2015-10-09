@@ -20,6 +20,7 @@ import com.xgf.inspection.photo.cropimage.CropHelper;
 import com.xgf.inspection.photo.utils.OSUtils;
 import com.xgf.inspection.ui.adapter.GvAdapter;
 import com.xgf.inspection.ui.view.CustomGridView;
+import com.xgf.inspection.utils.FileUtils;
 
 public class GalleryActivity extends Activity implements OnClickListener {
 
@@ -38,6 +39,7 @@ public class GalleryActivity extends Activity implements OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.gallery);
+		FileUtils.makeDirectory(FileUtils.BASE_PATH);
 		mContext = GalleryActivity.this;
 		initView();
 		initData();
