@@ -27,6 +27,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import com.xgf.inspection.R;
 import com.xgf.inspection.photo.utils.BitmapUtils;
@@ -54,7 +55,8 @@ public class CropImage extends MonitoredActivity {
 	
 	boolean mSaving; // Whether the "save" button is already clicked.
 
-	private CropImageView mImageView;
+	private CropImageView mCropImageView;
+	private ImageView mImageView;
 
 	private Bitmap mBitmap;
 	HighlightView mCrop;
@@ -68,8 +70,10 @@ public class CropImage extends MonitoredActivity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.cropimage);
 
-		mImageView = (CropImageView) findViewById(R.id.image);
-		mImageView.mContext = this;
+		mCropImageView = (CropImageView) findViewById(R.id.image);
+		mCropImageView.mContext = this;
+		
+		mImageView=(ImageView) findViewById(R.id.image_show);
 
 		// MenuHelper.showStorageToast(this);
 
@@ -147,20 +151,34 @@ public class CropImage extends MonitoredActivity {
 					public void onClick(View v) {
 
 						mBitmap = rotate90(mBitmap);
-						mImageView.center(true, true);
-						mImageView.HighlightViews.clear();
+						mCropImageView.center(true, true);
+						mCropImageView.HighlightViews.clear();
 						startFaceDetection();
 					}
 				});
 		// 确定
 		findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				onSaveClicked();
+				//onSaveClicked();
+				newSave();
 			}
 		});
-
-		startFaceDetection();
+		show();
+		//startFaceDetection();
 	}
+	
+	private void show(){
+		mImageView.setImageBitmap(mBitmap);
+	}
+	
+	private void newSave(){
+		Bundle extras = new Bundle();
+		extras.putParcelable("data", mBitmap);
+		setResult(RESULT_OK,
+				(new Intent()).setAction("inline-data").putExtras(extras));
+		finish();
+	}
+
 
 	public int getRotate() {
 		mCurRotate = (mCurRotate + 90) % 360;
@@ -178,7 +196,8 @@ public class CropImage extends MonitoredActivity {
 			return;
 		}
 
-		mImageView.setImageBitmapResetBase(mBitmap, true);
+		mCropImageView.setImageBitmapResetBase(mBitmap, true);
+		
 
 		startBackgroundJob(this, null, "rotating", new Runnable() {
 			public void run() {
@@ -188,12 +207,12 @@ public class CropImage extends MonitoredActivity {
 					public void run() {
 						final Bitmap b = mBitmap;
 						if (b != mBitmap && b != null) {
-							mImageView.setImageBitmapResetBase(b, true);
+							mCropImageView.setImageBitmapResetBase(b, true);
 							mBitmap.recycle();
 							mBitmap = b;
 						}
-						if (mImageView.getScale() == 1F) {
-							mImageView.center(true, true);
+						if (mCropImageView.getScale() == 1F) {
+							mCropImageView.center(true, true);
 						}
 						latch.countDown();
 					}
@@ -291,7 +310,7 @@ public class CropImage extends MonitoredActivity {
 
 		// Create a default HightlightView if we found no face in the picture.
 		private void makeDefault() {
-			HighlightView hv = new HighlightView(mImageView);
+			HighlightView hv = new HighlightView(mCropImageView);
 
 			int width = mBitmap.getWidth();
 			int height = mBitmap.getHeight();
@@ -318,20 +337,20 @@ public class CropImage extends MonitoredActivity {
 			RectF cropRect = new RectF(x, y, x + cropWidth, y + cropHeight);
 			hv.setup(mImageMatrix, imageRect, cropRect, mCircleCrop,
 					mAspectX != 0 && mAspectY != 0);
-			mImageView.add(hv);
+			mCropImageView.add(hv);
 		}
 
 		public void run() {
-			mImageMatrix = mImageView.getImageMatrix();
+			mImageMatrix = mCropImageView.getImageMatrix();
 
 			mScale = 1.0F / mScale;
 			mHandler.post(new Runnable() {
 				public void run() {
 					makeDefault();
 
-					mImageView.invalidate();
-					if (mImageView.HighlightViews.size() == 1) {
-						mCrop = mImageView.HighlightViews.get(0);
+					mCropImageView.invalidate();
+					if (mCropImageView.HighlightViews.size() == 1) {
+						mCrop = mCropImageView.HighlightViews.get(0);
 						mCrop.setFocus(true);
 					}
 				}
@@ -381,7 +400,7 @@ public class CropImage extends MonitoredActivity {
 			canvas.drawBitmap(mBitmap, srcRect, dstRect, null);
 
 			// Release bitmap memory as soon as possible
-			mImageView.clear();
+			mCropImageView.clear();
 			mBitmap.recycle();
 		} else {
 			Rect r = mCrop.getCropRect();
@@ -401,7 +420,7 @@ public class CropImage extends MonitoredActivity {
 			canvas.drawBitmap(mBitmap, r, dstRect, null);
 
 			// Release bitmap memory as soon as possible
-			mImageView.clear();
+			mCropImageView.clear();
 			mBitmap.recycle();
 
 			// If the required dimension is specified, scale the image.
@@ -415,9 +434,9 @@ public class CropImage extends MonitoredActivity {
 			}
 		}
 
-		mImageView.setImageBitmapResetBase(croppedImage, true);
-		mImageView.center(true, true);
-		mImageView.HighlightViews.clear();
+		mCropImageView.setImageBitmapResetBase(croppedImage, true);
+		mCropImageView.center(true, true);
+		mCropImageView.HighlightViews.clear();
 
 		Bundle extras = new Bundle();
 		extras.putParcelable("data", croppedImage);

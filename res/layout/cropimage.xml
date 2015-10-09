@@ -29,6 +29,13 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             class="com.xgf.inspection.photo.cropimage.CropImageView"
+            android:background="#55000000"
+            android:visibility="gone" />
+        
+        <ImageView
+            android:id="@+id/image_show"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:background="#55000000" />
 
         <RelativeLayout
@@ -53,7 +60,8 @@
                 android:layout_width="100dip"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="向右旋转90度" />
+                android:text="向右旋转90度"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/discard"
