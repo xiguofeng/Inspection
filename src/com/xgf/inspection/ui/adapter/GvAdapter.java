@@ -55,12 +55,8 @@ public class GvAdapter extends BaseAdapter {
 		} else {
 			holderView = (HolderView) currentView.getTag();
 		}
-		
-		
-		if (position != data.size() - 1) {
-			holderView.iconIv.setImageBitmap(data.get(position).getBitmap());
-		}
 
+		holderView.iconIv.setImageBitmap(data.get(position).getBitmap());
 		holderView.nameTv.setText(data.get(position).getUrl());
 
 		return currentView;

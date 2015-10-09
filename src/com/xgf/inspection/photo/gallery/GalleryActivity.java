@@ -108,9 +108,7 @@ public class GalleryActivity extends Activity implements OnClickListener {
 						mCropHelper.savePhoto(data,
 								OSUtils.getSdCardDirectory() + "/" + "2"
 										+ ".png");
-						mImageList.clear();
-						mImageList.addAll(imageList);
-						mImageList.add(imageValue);
+						mImageList.set(2, imageValue);
 						isComplete = true;
 					}
 					mAdapter.notifyDataSetChanged();
