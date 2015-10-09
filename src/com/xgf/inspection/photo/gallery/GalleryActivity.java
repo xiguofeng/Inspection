@@ -97,7 +97,7 @@ public class GalleryActivity extends Activity implements OnClickListener {
 						for (int i = 0; i < mImageList.size() - 1; i++) {
 							imageList.add(mImageList.get(i));
 							mCropHelper.savePhoto(data,
-									OSUtils.getSdCardDirectory() + "/" + i
+									OSUtils.getSdCardDirectory() + "/ins/" + i
 											+ ".png");
 						}
 						mImageList.clear();
@@ -106,7 +106,7 @@ public class GalleryActivity extends Activity implements OnClickListener {
 						mImageList.add(mAddImageValue);
 					} else {
 						mCropHelper.savePhoto(data,
-								OSUtils.getSdCardDirectory() + "/" + "2"
+								OSUtils.getSdCardDirectory() + "/ins/" + "2"
 										+ ".png");
 						mImageList.set(2, imageValue);
 						isComplete = true;
