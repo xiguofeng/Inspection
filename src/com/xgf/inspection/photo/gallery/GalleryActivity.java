@@ -21,7 +21,7 @@ import com.xgf.inspection.photo.utils.OSUtils;
 import com.xgf.inspection.ui.adapter.GvAdapter;
 import com.xgf.inspection.ui.view.CustomGridView;
 
-public class GalleryActivity1 extends Activity implements OnClickListener {
+public class GalleryActivity extends Activity implements OnClickListener {
 
 	private CropHelper mCropHelper;
 
@@ -38,7 +38,7 @@ public class GalleryActivity1 extends Activity implements OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.gallery);
-		mContext = GalleryActivity1.this;
+		mContext = GalleryActivity.this;
 		initView();
 		initData();
 	}

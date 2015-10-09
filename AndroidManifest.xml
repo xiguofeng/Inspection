@@ -220,7 +220,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.xgf.inspection.photo.gallery.GalleryActivity1"
+            android:name="com.xgf.inspection.photo.gallery.GalleryActivity"
             android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" >
