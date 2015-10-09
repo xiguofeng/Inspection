@@ -55,7 +55,8 @@ public class GvAdapter extends BaseAdapter {
 		} else {
 			holderView = (HolderView) currentView.getTag();
 		}
-
+		
+		
 		if (position != data.size() - 1) {
 			holderView.iconIv.setImageBitmap(data.get(position).getBitmap());
 		}

@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +32,8 @@ public class GalleryActivity1 extends Activity implements OnClickListener {
 	private GvAdapter mAdapter;
 	private ImageValue mAddImageValue;
 
+	private boolean isComplete = false;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -51,7 +54,9 @@ public class GalleryActivity1 extends Activity implements OnClickListener {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				if (position == mImageList.size() - 1) {
-					mCropHelper.startCamera();
+					if (!isComplete) {
+						mCropHelper.startCamera();
+					}
 				}
 			}
 		});
@@ -59,6 +64,9 @@ public class GalleryActivity1 extends Activity implements OnClickListener {
 
 	private void initData() {
 		mAddImageValue = new ImageValue();
+		Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
+				R.drawable.add);
+		mAddImageValue.setBitmap(bitmap);
 		mImageList.add(mAddImageValue);
 		mCropHelper = new CropHelper(this, OSUtils.getSdCardDirectory()
 				+ "/head.png");
@@ -88,16 +96,25 @@ public class GalleryActivity1 extends Activity implements OnClickListener {
 					if (mImageList.size() < 3) {
 						for (int i = 0; i < mImageList.size() - 1; i++) {
 							imageList.add(mImageList.get(i));
+							mCropHelper.savePhoto(data,
+									OSUtils.getSdCardDirectory() + "/" + i
+											+ ".png");
 						}
+						mImageList.clear();
+						mImageList.addAll(imageList);
+						mImageList.add(imageValue);
+						mImageList.add(mAddImageValue);
+					} else {
+						mCropHelper.savePhoto(data,
+								OSUtils.getSdCardDirectory() + "/" + "2"
+										+ ".png");
+						mImageList.clear();
+						mImageList.addAll(imageList);
+						mImageList.add(imageValue);
+						isComplete = true;
 					}
-					mImageList.clear();
-					mImageList.addAll(imageList);
-					mImageList.add(imageValue);
-					mImageList.add(mAddImageValue);
 					mAdapter.notifyDataSetChanged();
 
-					mCropHelper.savePhoto(data, OSUtils.getSdCardDirectory()
-							+ "/myHead.png");
 				}
 				break;
 			default:
