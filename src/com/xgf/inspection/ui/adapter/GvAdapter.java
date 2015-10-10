@@ -48,8 +48,8 @@ public class GvAdapter extends BaseAdapter {
 					R.layout.gv_common_item, null);
 			holderView.iconIv = (ImageView) currentView
 					.findViewById(R.id.gv_common_iv);
-			holderView.nameTv = (TextView) currentView
-					.findViewById(R.id.gv_common_name_tv);
+//			holderView.nameTv = (TextView) currentView
+//					.findViewById(R.id.gv_common_name_tv);
 
 			currentView.setTag(holderView);
 		} else {
@@ -57,7 +57,6 @@ public class GvAdapter extends BaseAdapter {
 		}
 
 		holderView.iconIv.setImageBitmap(data.get(position).getBitmap());
-		holderView.nameTv.setText(data.get(position).getUrl());
 
 		return currentView;
 	}
