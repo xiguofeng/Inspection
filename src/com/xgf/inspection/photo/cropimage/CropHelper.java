@@ -48,10 +48,11 @@ public class CropHelper {
 	 * 开始裁剪
 	 * 
 	 */
-	public void startPhotoCrop(Uri uri, String duplicatePath, int reqCode, boolean mBWPhoto) {
+	public void startPhotoCrop(Uri uri, String duplicatePath, int reqCode,
+			boolean mBWPhoto) {
 
 		Intent intent = new Intent();
-		intent.setClass(mActivity,CropImage.class);
+		intent.setClass(mActivity, CropImage.class);
 		intent.setDataAndType(uri, "image/*");
 
 		intent.putExtra("crop", "true");
@@ -63,7 +64,7 @@ public class CropHelper {
 		intent.putExtra("scaleUpIfNeeded", true);
 		intent.putExtra("BWPhoto", mBWPhoto);
 		mActivity.startActivityForResult(intent, reqCode);
-		
+
 	}
 
 	public void startCamera() {
@@ -96,20 +97,22 @@ public class CropHelper {
 			Uri uri = null;
 			try {
 				uri = Uri.parse(mTempPhotoPath);
-				startPhotoCrop(uri, null, HEAD_SAVE_PHOTO ,false);
+				startPhotoCrop(uri, null, HEAD_SAVE_PHOTO, false);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		}
 	}
-	
+
 	/**
 	 * 调用相机拍照
+	 * 
 	 * @param data
-	 * @param mBWphoto 是否为黑白照片
+	 * @param mBWphoto
+	 *            是否为黑白照片
 	 */
-	public void getDataFromCamera(Intent data,boolean mBWphoto) {
+	public void getDataFromCamera(Intent data, boolean mBWphoto) {
 		File temp = new File(mTempPhotoPath);
 		if (!temp.exists()) {
 			showToast(HEAD_SET_CANCEL);
@@ -117,7 +120,7 @@ public class CropHelper {
 			Uri uri = null;
 			try {
 				uri = Uri.parse(mTempPhotoPath);
-				startPhotoCrop(uri, null, HEAD_SAVE_PHOTO, mBWphoto );
+				startPhotoCrop(uri, null, HEAD_SAVE_PHOTO, mBWphoto);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -132,7 +135,7 @@ public class CropHelper {
 			Uri uri = null;
 			uri = data.getData();
 			if (uri != null) {
-				startPhotoCrop(uri, null, CropHelper.HEAD_SAVE_PHOTO,false);
+				startPhotoCrop(uri, null, CropHelper.HEAD_SAVE_PHOTO, false);
 			}
 		}
 	}
@@ -166,7 +169,22 @@ public class CropHelper {
 			return false;
 		}
 	}
-	
+
+	/**
+	 * 截图保存到指定目录
+	 * 
+	 * @param data
+	 * @return
+	 */
+	public boolean savePhoto(Bitmap bitmap, String filePath) {
+		if (bitmap != null) {
+			return BitmapUtils.saveFile(bitmap, filePath);
+		} else {
+			showToast(HEAD_IMAGE_INVALID);
+			return false;
+		}
+	}
+
 	/**
 	 * 复制临时路径下的截图文件到指定路径
 	 * 

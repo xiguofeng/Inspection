@@ -102,10 +102,10 @@ public class GalleryActivity extends Activity implements OnClickListener,
 					if (mImageList.size() < 3) {
 						for (int i = 0; i < mImageList.size() - 1; i++) {
 							imageList.add(mImageList.get(i));
-							mCropHelper.savePhoto(data,
-									OSUtils.getSdCardDirectory() + "/ins/" + i
-											+ ".png");
 						}
+						mCropHelper.savePhoto(data,
+								OSUtils.getSdCardDirectory() + "/ins/"
+										+ (mImageList.size() - 1) + ".png");
 						mImageList.clear();
 						mImageList.addAll(imageList);
 						mImageList.add(imageValue);
