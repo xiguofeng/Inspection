@@ -2,6 +2,7 @@ package com.xgf.inspection.photo.gallery;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,6 +23,9 @@ import com.xgf.inspection.photo.utils.OSUtils;
 import com.xgf.inspection.ui.adapter.GvAdapter;
 import com.xgf.inspection.ui.utils.ListItemClickHelp;
 import com.xgf.inspection.ui.view.CustomGridView;
+import com.xgf.inspection.ui.view.dialog.widget.ActionSheetDialog;
+import com.xgf.inspection.ui.view.dialog.widget.ActionSheetDialog.OnSheetItemClickListener;
+import com.xgf.inspection.ui.view.dialog.widget.ActionSheetDialog.SheetItemColor;
 import com.xgf.inspection.utils.FileUtils;
 
 public class GalleryActivity extends Activity implements OnClickListener,
@@ -138,6 +142,33 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	public void onClick(View item, View widget, int position, int which,
 			boolean isCheck) {
 		mSelect.put(position, isCheck);
-	}
 
+		boolean isHasSelect = false;
+		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
+
+			if (entry.getValue()) {
+				isHasSelect = true;
+			}
+		}
+
+		if (isHasSelect) {
+			new ActionSheetDialog(GalleryActivity.this)
+					.builder()
+					.setTitle("上传/删除")
+					.setCancelable(false)
+					.setCanceledOnTouchOutside(false)
+					.addSheetItem("上传", SheetItemColor.Blue,
+							new OnSheetItemClickListener() {
+								@Override
+								public void onClick(int which) {
+								}
+							})
+					.addSheetItem("删除", SheetItemColor.Blue,
+							new OnSheetItemClickListener() {
+								@Override
+								public void onClick(int which) {
+								}
+							}).show();
+		}
+	}
 }
