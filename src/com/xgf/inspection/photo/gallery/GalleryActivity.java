@@ -1,5 +1,6 @@
 package com.xgf.inspection.photo.gallery;
 
+import java.security.spec.MGF1ParameterSpec;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
 
 import com.xgf.inspection.R;
 import com.xgf.inspection.entity.ImageValue;
@@ -133,6 +135,44 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		}
 	}
 
+	private void submint() {
+		boolean isHasSelect = false;
+		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
+			if (entry.getValue()) {
+				isHasSelect = true;
+				mImageList.remove(entry.getKey());
+			}
+		}
+		if (!isHasSelect) {
+			Toast.makeText(mContext, "请选择图片！", Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	private void del() {
+		boolean isHasSelect = false;
+		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
+			if (entry.getValue()) {
+				isHasSelect = true;
+				mImageList.remove(entry.getKey());
+			}
+		}
+		if (!isHasSelect) {
+			Toast.makeText(mContext, "请选择图片！", Toast.LENGTH_SHORT).show();
+		}
+
+		ArrayList<ImageValue> imageList = new ArrayList<ImageValue>();
+		for (int i = 0; i < mImageList.size(); i++) {
+			imageList.add(mImageList.get(i));
+		}
+
+		mImageList.clear();
+		mImageList.addAll(mImageList);
+		if (isHasSelect) {
+			isComplete = true;
+			mAdapter.setAddDisappear(true);
+		}
+	}
+
 	@Override
 	public void onClick(View v) {
 
@@ -161,12 +201,14 @@ public class GalleryActivity extends Activity implements OnClickListener,
 							new OnSheetItemClickListener() {
 								@Override
 								public void onClick(int which) {
+									submint();
 								}
 							})
 					.addSheetItem("删除", SheetItemColor.Blue,
 							new OnSheetItemClickListener() {
 								@Override
 								public void onClick(int which) {
+									del();
 								}
 							}).show();
 		}
