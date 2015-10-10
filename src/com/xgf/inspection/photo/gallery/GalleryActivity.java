@@ -1,6 +1,7 @@
 package com.xgf.inspection.photo.gallery;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.Context;
@@ -35,6 +36,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	private GvAdapter mAdapter;
 	private ImageValue mAddImageValue;
 
+	private HashMap<Integer, Boolean> mSelect = new HashMap<Integer, Boolean>();
 	private boolean isComplete = false;
 
 	@Override
@@ -133,8 +135,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	@Override
 	public void onClick(View item, View widget, int position, int which,
 			boolean isCheck) {
-		// TODO Auto-generated method stub
-
+		mSelect.put(position, isCheck);
 	}
 
 }
