@@ -19,10 +19,12 @@ import com.xgf.inspection.entity.ImageValue;
 import com.xgf.inspection.photo.cropimage.CropHelper;
 import com.xgf.inspection.photo.utils.OSUtils;
 import com.xgf.inspection.ui.adapter.GvAdapter;
+import com.xgf.inspection.ui.utils.ListItemClickHelp;
 import com.xgf.inspection.ui.view.CustomGridView;
 import com.xgf.inspection.utils.FileUtils;
 
-public class GalleryActivity extends Activity implements OnClickListener {
+public class GalleryActivity extends Activity implements OnClickListener,
+		ListItemClickHelp {
 
 	private CropHelper mCropHelper;
 
@@ -47,7 +49,7 @@ public class GalleryActivity extends Activity implements OnClickListener {
 
 	private void initView() {
 		mImageGv = (CustomGridView) findViewById(R.id.gallery_gv);
-		mAdapter = new GvAdapter(mContext, mImageList);
+		mAdapter = new GvAdapter(mContext, mImageList, this);
 		mImageGv.setAdapter(mAdapter);
 
 		mImageGv.setOnItemClickListener(new OnItemClickListener() {
@@ -125,6 +127,13 @@ public class GalleryActivity extends Activity implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
+
+	}
+
+	@Override
+	public void onClick(View item, View widget, int position, int which,
+			boolean isCheck) {
+		// TODO Auto-generated method stub
 
 	}
 
