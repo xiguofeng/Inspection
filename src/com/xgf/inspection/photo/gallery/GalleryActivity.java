@@ -52,6 +52,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	private void initView() {
 		mImageGv = (CustomGridView) findViewById(R.id.gallery_gv);
 		mAdapter = new GvAdapter(mContext, mImageList, this);
+		mAdapter.setAddDisappear(false);
 		mImageGv.setAdapter(mAdapter);
 
 		mImageGv.setOnItemClickListener(new OnItemClickListener() {
@@ -116,6 +117,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 										+ ".png");
 						mImageList.set(2, imageValue);
 						isComplete = true;
+						mAdapter.setAddDisappear(true);
 					}
 					mAdapter.notifyDataSetChanged();
 

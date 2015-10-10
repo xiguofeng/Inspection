@@ -21,6 +21,8 @@ public class GvAdapter extends BaseAdapter {
 	private Context context;
 	private ArrayList<ImageValue> data;
 
+	private boolean isAddDisappear;
+
 	private ListItemClickHelp mCallback;
 
 	public GvAdapter(Context context, ArrayList<ImageValue> data,
@@ -64,8 +66,15 @@ public class GvAdapter extends BaseAdapter {
 		} else {
 			holderView = (HolderView) currentView.getTag();
 		}
-
+		holderView.cb.setVisibility(View.GONE);
 		holderView.iconIv.setImageBitmap(data.get(position).getBitmap());
+
+		if (position != data.size() - 1) {
+			holderView.cb.setVisibility(View.VISIBLE);
+		}
+		if (isAddDisappear) {
+			holderView.cb.setVisibility(View.VISIBLE);
+		}
 
 		final int tempPosition = position;
 		final View view = currentView;
@@ -90,6 +99,14 @@ public class GvAdapter extends BaseAdapter {
 
 		private TextView nameTv;
 
+	}
+
+	public boolean isAddDisappear() {
+		return isAddDisappear;
+	}
+
+	public void setAddDisappear(boolean isAddDisappear) {
+		this.isAddDisappear = isAddDisappear;
 	}
 
 }
