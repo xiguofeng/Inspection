@@ -68,7 +68,13 @@ public class AppLogic {
 							+ RequestUrl.record.SendWirePoleCheckRecord,
 							envelope);
 
-					// Log.e("xxx_sop", rpc.toString());
+					Log.e("xxx_sop", rpc.toString());
+					if (null != envelope.getResponse()) {
+						SoapObject responseSO = (SoapObject) envelope
+								.getResponse();
+						responseSO.toString();
+						Log.e("xxx_responseSO", rpc.toString());
+					}
 
 					SoapObject so = (SoapObject) envelope.bodyIn;
 
