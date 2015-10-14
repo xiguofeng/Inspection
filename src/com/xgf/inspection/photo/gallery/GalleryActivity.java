@@ -1,6 +1,5 @@
 package com.xgf.inspection.photo.gallery;
 
-import java.security.spec.MGF1ParameterSpec;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,24 +10,27 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.xgf.inspection.R;
 import com.xgf.inspection.entity.ImageValue;
+import com.xgf.inspection.network.logic.AppLogic;
 import com.xgf.inspection.photo.cropimage.CropHelper;
 import com.xgf.inspection.photo.utils.OSUtils;
 import com.xgf.inspection.ui.adapter.GvAdapter;
 import com.xgf.inspection.ui.utils.ListItemClickHelp;
 import com.xgf.inspection.ui.view.CustomGridView;
-import com.xgf.inspection.ui.view.dialog.widget.ActionSheetDialog;
-import com.xgf.inspection.ui.view.dialog.widget.ActionSheetDialog.OnSheetItemClickListener;
-import com.xgf.inspection.ui.view.dialog.widget.ActionSheetDialog.SheetItemColor;
+import com.xgf.inspection.utils.DeviceUuidFactory;
 import com.xgf.inspection.utils.FileUtils;
+import com.xgf.inspection.utils.ImageUtils;
 
 public class GalleryActivity extends Activity implements OnClickListener,
 		ListItemClickHelp {
@@ -42,8 +44,37 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	private GvAdapter mAdapter;
 	private ImageValue mAddImageValue;
 
+	private LinearLayout mSubmitLl;
+	private LinearLayout mDelLl;
+
 	private HashMap<Integer, Boolean> mSelect = new HashMap<Integer, Boolean>();
 	private boolean isComplete = false;
+
+	private String mQrCode;
+
+	Handler mHandler = new Handler() {
+
+		@Override
+		public void handleMessage(Message msg) {
+			int what = msg.what;
+			switch (what) {
+
+			case AppLogic.SEND_RECORD_SUC: {
+			}
+			case AppLogic.SEND_RECORD_FAIL: {
+				break;
+			}
+			case AppLogic.SEND_RECORD_EXCEPTION: {
+				break;
+			}
+
+			default:
+				break;
+			}
+
+		}
+
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +87,11 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	}
 
 	private void initView() {
+		mSubmitLl = (LinearLayout) findViewById(R.id.gallery_bottom_menu_submit_ll);
+		mDelLl = (LinearLayout) findViewById(R.id.gallery_bottom_menu_del_ll);
+		mSubmitLl.setOnClickListener(this);
+		mDelLl.setOnClickListener(this);
+
 		mImageGv = (CustomGridView) findViewById(R.id.gallery_gv);
 		mAdapter = new GvAdapter(mContext, mImageList, this);
 		mAdapter.setAddDisappear(false);
@@ -83,6 +119,8 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		mImageList.add(mAddImageValue);
 		mCropHelper = new CropHelper(this, OSUtils.getSdCardDirectory()
 				+ "/head.png");
+
+		mQrCode = getIntent().getExtras().getString("QrCode");
 	}
 
 	@Override
@@ -136,16 +174,16 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	}
 
 	private void submint() {
-		boolean isHasSelect = false;
-		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
-			if (entry.getValue()) {
-				isHasSelect = true;
-				mImageList.remove(entry.getKey());
-			}
+		if (isComplete) {
+			DeviceUuidFactory deviceUuidFactory = new DeviceUuidFactory(
+					mContext);
+			AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
+					deviceUuidFactory.uuid.toString(), mQrCode, String
+							.valueOf(System.currentTimeMillis()), "phote_one",
+					ImageUtils
+							.Bitmap2StrByBase64(mImageList.get(0).getBitmap()));
 		}
-		if (!isHasSelect) {
-			Toast.makeText(mContext, "请选择图片！", Toast.LENGTH_SHORT).show();
-		}
+
 	}
 
 	private void del() {
@@ -175,7 +213,18 @@ public class GalleryActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void onClick(View v) {
-
+		switch (v.getId()) {
+		case R.id.gallery_bottom_menu_submit_ll: {
+			submint();
+			break;
+		}
+		case R.id.gallery_bottom_menu_del_ll: {
+			del();
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 	@Override
@@ -183,34 +232,24 @@ public class GalleryActivity extends Activity implements OnClickListener,
 			boolean isCheck) {
 		mSelect.put(position, isCheck);
 
-		boolean isHasSelect = false;
+		boolean isHasAllSelect = true;
+		boolean isHasSelect = true;
 		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
-
+			if (!entry.getValue()) {
+				isHasAllSelect = false;
+			}
 			if (entry.getValue()) {
 				isHasSelect = true;
 			}
 		}
-
-		if (isHasSelect) {
-			new ActionSheetDialog(GalleryActivity.this)
-					.builder()
-					.setTitle("上传/删除")
-					.setCancelable(false)
-					.setCanceledOnTouchOutside(false)
-					.addSheetItem("上传", SheetItemColor.Blue,
-							new OnSheetItemClickListener() {
-								@Override
-								public void onClick(int which) {
-									submint();
-								}
-							})
-					.addSheetItem("删除", SheetItemColor.Blue,
-							new OnSheetItemClickListener() {
-								@Override
-								public void onClick(int which) {
-									del();
-								}
-							}).show();
+		if (!isHasAllSelect) {
+			mSubmitLl.setBackgroundColor(getResources().getColor(
+					R.color.gray_bg));
 		}
+
+		if (!isHasSelect) {
+			mDelLl.setBackgroundColor(getResources().getColor(R.color.gray_bg));
+		}
+
 	}
 }

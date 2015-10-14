@@ -508,6 +508,7 @@ public final class CaptureActivity extends Activity implements
 		}
 
 		Intent intent = new Intent(CaptureActivity.this, GalleryActivity.class);
+		intent.putExtra("QrCode", rawResult.getText());
 		startActivity(intent);
 		finish();
 	}
