@@ -1,5 +1,6 @@
 package com.xgf.inspection.photo.gallery;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -148,17 +149,21 @@ public class GalleryActivity extends Activity implements OnClickListener,
 						for (int i = 0; i < mImageList.size() - 1; i++) {
 							imageList.add(mImageList.get(i));
 						}
-						mCropHelper.savePhoto(data,
-								OSUtils.getSdCardDirectory() + "/ins/"
-										+ (mImageList.size() - 1) + ".png");
+						String localUrl = OSUtils.getSdCardDirectory()
+								+ "/ins/"
+								+ String.valueOf(System.currentTimeMillis())
+								+ ".png";
+						mCropHelper.savePhoto(data, localUrl);
 						mImageList.clear();
 						mImageList.addAll(imageList);
 						mImageList.add(imageValue);
 						mImageList.add(mAddImageValue);
 					} else {
-						mCropHelper.savePhoto(data,
-								OSUtils.getSdCardDirectory() + "/ins/" + "2"
-										+ ".png");
+						String localUrl = OSUtils.getSdCardDirectory()
+								+ "/ins/"
+								+ String.valueOf(System.currentTimeMillis())
+								+ ".png";
+						mCropHelper.savePhoto(data, localUrl);
 						mImageList.set(2, imageValue);
 						isComplete = true;
 						mAdapter.setAddDisappear(true);
@@ -192,10 +197,14 @@ public class GalleryActivity extends Activity implements OnClickListener,
 			if (entry.getValue()) {
 				isHasSelect = true;
 				mImageList.remove(entry.getKey());
+				File file = new File(mImageList.get(entry.getKey())
+						.getLocalUrl());
+				com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
 			}
 		}
 		if (!isHasSelect) {
 			Toast.makeText(mContext, "请选择图片！", Toast.LENGTH_SHORT).show();
+			return;
 		}
 
 		ArrayList<ImageValue> imageList = new ArrayList<ImageValue>();
@@ -204,10 +213,10 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		}
 
 		mImageList.clear();
-		mImageList.addAll(mImageList);
+		mImageList.addAll(imageList);
 		if (isHasSelect) {
-			isComplete = true;
-			mAdapter.setAddDisappear(true);
+			isComplete = false;
+			mAdapter.setAddDisappear(false);
 		}
 	}
 
