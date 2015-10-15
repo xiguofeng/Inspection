@@ -1,6 +1,7 @@
 package com.xgf.inspection.ui.adapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -19,23 +20,38 @@ import com.xgf.inspection.ui.utils.ListItemClickHelp;
 
 public class GvAdapter extends BaseAdapter {
 	private Context context;
-	private ArrayList<ImageValue> data;
+	private ArrayList<ImageValue> mDatas;
 
 	private boolean isAddDisappear;
 
 	private ListItemClickHelp mCallback;
 
+	// 用来控制CheckBox的选中状况
+	private static HashMap<Integer, Boolean> mIsSelected = new HashMap<Integer, Boolean>();
+
 	public GvAdapter(Context context, ArrayList<ImageValue> data,
 			ListItemClickHelp callback) {
 
 		this.context = context;
-		this.data = data;
+		this.mDatas = data;
 		this.mCallback = callback;
+	}
+
+	public void initCheck() {
+		for (int i = 0; i < mDatas.size(); i++) {
+			getmIsSelected().put(i, false);
+		}
+	}
+
+	public void initChecked() {
+		for (int i = 0; i < mDatas.size(); i++) {
+			getmIsSelected().put(i, true);
+		}
 	}
 
 	@Override
 	public int getCount() {
-		return data.size();
+		return mDatas.size();
 	}
 
 	@Override
@@ -67,9 +83,9 @@ public class GvAdapter extends BaseAdapter {
 			holderView = (HolderView) currentView.getTag();
 		}
 		holderView.cb.setVisibility(View.GONE);
-		holderView.iconIv.setImageBitmap(data.get(position).getBitmap());
+		holderView.iconIv.setImageBitmap(mDatas.get(position).getBitmap());
 
-		if (position != data.size() - 1) {
+		if (position != mDatas.size() - 1) {
 			holderView.cb.setVisibility(View.VISIBLE);
 		}
 		if (isAddDisappear) {
@@ -79,6 +95,8 @@ public class GvAdapter extends BaseAdapter {
 		final int tempPosition = position;
 		final View view = currentView;
 		final int which = holderView.cb.getId();
+
+		holderView.cb.setChecked(getmIsSelected().get(position));
 		holderView.cb.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
 			@Override
@@ -107,6 +125,14 @@ public class GvAdapter extends BaseAdapter {
 
 	public void setAddDisappear(boolean isAddDisappear) {
 		this.isAddDisappear = isAddDisappear;
+	}
+
+	public static HashMap<Integer, Boolean> getmIsSelected() {
+		return mIsSelected;
+	}
+
+	public static void setmIsSelected(HashMap<Integer, Boolean> mIsSelected) {
+		GvAdapter.mIsSelected = mIsSelected;
 	}
 
 }

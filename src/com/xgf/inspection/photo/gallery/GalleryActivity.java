@@ -38,6 +38,7 @@ import com.xgf.inspection.utils.ImageUtils;
 public class GalleryActivity extends Activity implements OnClickListener,
 		ListItemClickHelp {
 
+	private static final String ADDPATH = "addImage";
 	private CropHelper mCropHelper;
 
 	private Context mContext;
@@ -119,7 +120,11 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
 				R.drawable.add);
 		mAddImageValue.setBitmap(bitmap);
+		mAddImageValue.setLocalUrl(ADDPATH);
 		mImageList.add(mAddImageValue);
+		mAdapter.initCheck();
+		mAdapter.notifyDataSetChanged();
+
 		mCropHelper = new CropHelper(this, OSUtils.getSdCardDirectory()
 				+ "/head.png");
 
@@ -172,6 +177,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 						isComplete = true;
 						mAdapter.setAddDisappear(true);
 					}
+					mAdapter.initCheck();
 					mAdapter.notifyDataSetChanged();
 
 				}
@@ -197,6 +203,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 
 	private void del() {
 		boolean isHasSelect = false;
+		boolean isHasAdd = false;
 		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
 			if (entry.getValue()) {
 				isHasSelect = true;
@@ -215,17 +222,23 @@ public class GalleryActivity extends Activity implements OnClickListener,
 
 		ArrayList<ImageValue> imageList = new ArrayList<ImageValue>();
 		for (int i = 0; i < mImageList.size(); i++) {
+			if (mImageList.get(i).getLocalUrl().equals(ADDPATH)) {
+				isHasAdd = true;
+			}
 			imageList.add(mImageList.get(i));
 			mSelect.put(i, false);
 		}
 
 		mImageList.clear();
 		mImageList.addAll(imageList);
-		mImageList.add(mAddImageValue);
+		if (!isHasAdd) {
+			mImageList.add(mAddImageValue);
+		}
 		if (isHasSelect) {
 			isComplete = false;
 			mAdapter.setAddDisappear(false);
 		}
+		mAdapter.initCheck();
 		mAdapter.notifyDataSetChanged();
 	}
 
