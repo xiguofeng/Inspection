@@ -62,6 +62,7 @@ import com.google.zxing.ResultMetadataType;
 import com.google.zxing.ResultPoint;
 import com.xgf.inspection.R;
 import com.xgf.inspection.photo.gallery.GalleryActivity;
+import com.xgf.inspection.photo.gallery.GalleryShowActivity;
 import com.xgf.inspection.qrcode.google.zxing.client.camera.CameraManager;
 import com.xgf.inspection.qrcode.google.zxing.client.history.HistoryItem;
 import com.xgf.inspection.qrcode.google.zxing.client.history.HistoryManager;
@@ -507,7 +508,7 @@ public final class CaptureActivity extends Activity implements
 			break;
 		}
 
-		Intent intent = new Intent(CaptureActivity.this, GalleryActivity.class);
+		Intent intent = new Intent(CaptureActivity.this, GalleryShowActivity.class);
 		intent.putExtra("QrCode", rawResult.getText());
 		startActivity(intent);
 		finish();

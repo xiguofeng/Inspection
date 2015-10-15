@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,6 +19,7 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xgf.inspection.R;
@@ -27,7 +27,7 @@ import com.xgf.inspection.entity.ImageValue;
 import com.xgf.inspection.network.logic.AppLogic;
 import com.xgf.inspection.photo.cropimage.CropHelper;
 import com.xgf.inspection.photo.utils.OSUtils;
-import com.xgf.inspection.ui.adapter.GvAdapter;
+import com.xgf.inspection.ui.adapter.GvShowAdapter;
 import com.xgf.inspection.ui.utils.ListItemClickHelp;
 import com.xgf.inspection.ui.view.CustomGridView;
 import com.xgf.inspection.ui.view.dialog.widget.AlertDialog;
@@ -35,23 +35,22 @@ import com.xgf.inspection.utils.DeviceUuidFactory;
 import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
 
-public class GalleryActivity extends Activity implements OnClickListener,
+public class GalleryShowActivity extends Activity implements OnClickListener,
 		ListItemClickHelp {
 
-	private static final String ADDPATH = "addImage";
 	private CropHelper mCropHelper;
 
 	private Context mContext;
 
 	private CustomGridView mImageGv;
 	private ArrayList<ImageValue> mImageList = new ArrayList<ImageValue>();
-	private GvAdapter mAdapter;
-	private ImageValue mAddImageValue;
+	private GvShowAdapter mAdapter;
 
-	private LinearLayout mSubmitLl;
+	private TextView mSubmitTv;
 	private LinearLayout mDelLl;
+	private LinearLayout mAddLl;
 
-	private HashMap<Integer, Boolean> mSelect = new HashMap<Integer, Boolean>();
+	private HashMap<String, Boolean> mSelect = new HashMap<String, Boolean>();
 	private boolean isComplete = false;
 
 	private String mQrCode;
@@ -85,19 +84,21 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.gallery);
 		FileUtils.makeDirectory(FileUtils.BASE_PATH);
-		mContext = GalleryActivity.this;
+		mContext = GalleryShowActivity.this;
 		initView();
 		initData();
 	}
 
 	private void initView() {
-		mSubmitLl = (LinearLayout) findViewById(R.id.gallery_submit_tv);
+		mSubmitTv = (TextView) findViewById(R.id.gallery_submit_tv);
 		mDelLl = (LinearLayout) findViewById(R.id.gallery_bottom_menu_del_ll);
-		mSubmitLl.setOnClickListener(this);
+		mAddLl = (LinearLayout) findViewById(R.id.gallery_bottom_menu_add_ll);
+		mSubmitTv.setOnClickListener(this);
 		mDelLl.setOnClickListener(this);
+		mAddLl.setOnClickListener(this);
 
 		mImageGv = (CustomGridView) findViewById(R.id.gallery_gv);
-		mAdapter = new GvAdapter(mContext, mImageList, this);
+		mAdapter = new GvShowAdapter(mContext, mImageList, this);
 		mAdapter.setAddDisappear(false);
 		mImageGv.setAdapter(mAdapter);
 
@@ -106,25 +107,14 @@ public class GalleryActivity extends Activity implements OnClickListener,
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				if (position == mImageList.size() - 1) {
-					if (!isComplete) {
-						mCropHelper.startCamera();
-					}
-				}
+				// if (position == mImageList.size() - 1) {
+				//
+				// }
 			}
 		});
 	}
 
 	private void initData() {
-		mAddImageValue = new ImageValue();
-		Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
-				R.drawable.add);
-		mAddImageValue.setBitmap(bitmap);
-		mAddImageValue.setLocalUrl(ADDPATH);
-		mImageList.add(mAddImageValue);
-		mAdapter.initCheck();
-		mAdapter.notifyDataSetChanged();
-
 		mCropHelper = new CropHelper(this, OSUtils.getSdCardDirectory()
 				+ "/head.png");
 
@@ -151,35 +141,21 @@ public class GalleryActivity extends Activity implements OnClickListener,
 					ImageValue imageValue = new ImageValue();
 					imageValue.setBitmap((Bitmap) data
 							.getParcelableExtra("data"));
-					ArrayList<ImageValue> imageList = new ArrayList<ImageValue>();
-					if (mImageList.size() < 3) {
-						for (int i = 0; i < mImageList.size() - 1; i++) {
-							imageList.add(mImageList.get(i));
-						}
-						String localUrl = OSUtils.getSdCardDirectory()
-								+ "/ins/"
-								+ String.valueOf(System.currentTimeMillis())
-								+ ".png";
-						mCropHelper.savePhoto(data, localUrl);
-						imageValue.setLocalUrl(localUrl);
-						mImageList.clear();
-						mImageList.addAll(imageList);
-						mImageList.add(imageValue);
-						mImageList.add(mAddImageValue);
-					} else {
-						String localUrl = OSUtils.getSdCardDirectory()
-								+ "/ins/"
-								+ String.valueOf(System.currentTimeMillis())
-								+ ".png";
-						mCropHelper.savePhoto(data, localUrl);
-						imageValue.setLocalUrl(localUrl);
-						mImageList.set(2, imageValue);
+					String timeStr = String.valueOf(System.currentTimeMillis());
+					String localUrl = OSUtils.getSdCardDirectory() + "/ins/"
+							+ timeStr + ".png";
+					mCropHelper.savePhoto(data, localUrl);
+					imageValue.setId(timeStr);
+					imageValue.setLocalUrl(localUrl);
+					mImageList.add(imageValue);
+
+					if (mImageList.size() >= 3) {
 						isComplete = true;
-						mAdapter.setAddDisappear(true);
+						mAddLl.setBackgroundColor(getResources()
+								.getColor(R.color.gray_search_bg));
 					}
 					mAdapter.initCheck();
 					mAdapter.notifyDataSetChanged();
-
 				}
 				break;
 			default:
@@ -200,22 +176,28 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		}
 
 	}
-	
-	private void add(){
-		
+
+	private void add() {
+		if (!isComplete) {
+			mCropHelper.startCamera();
+		}
 	}
 
 	private void del() {
 		boolean isHasSelect = false;
-		boolean isHasAdd = false;
-		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
+		for (Map.Entry<String, Boolean> entry : mSelect.entrySet()) {
 			if (entry.getValue()) {
+				String id = entry.getKey();
 				isHasSelect = true;
-				File file = new File(mImageList.get(entry.getKey())
-						.getLocalUrl());
-				com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
-				int index = entry.getKey();
-				mImageList.remove(index);
+				for (int i = 0; i < mImageList.size(); i++) {
+					if (mImageList.get(i).getId().equals(id)) {
+						File file = new File(mImageList.get(i).getLocalUrl());
+						com.xgf.inspection.photo.utils.FileUtils
+								.deleteAllFiles(file);
+						mImageList.remove(i);
+					}
+				}
+
 			}
 		}
 		mSelect.clear();
@@ -226,21 +208,17 @@ public class GalleryActivity extends Activity implements OnClickListener,
 
 		ArrayList<ImageValue> imageList = new ArrayList<ImageValue>();
 		for (int i = 0; i < mImageList.size(); i++) {
-			if (mImageList.get(i).getLocalUrl().equals(ADDPATH)) {
-				isHasAdd = true;
-			}
 			imageList.add(mImageList.get(i));
-			mSelect.put(i, false);
+			mSelect.put(mImageList.get(i).getId(), false);
 		}
 
 		mImageList.clear();
 		mImageList.addAll(imageList);
-		if (!isHasAdd) {
-			mImageList.add(mAddImageValue);
-		}
 		if (isHasSelect) {
 			isComplete = false;
 			mAdapter.setAddDisappear(false);
+			mAddLl.setBackgroundColor(getResources()
+					.getColor(R.color.red_btn_bg));
 		}
 		mAdapter.initCheck();
 		mAdapter.notifyDataSetChanged();
@@ -269,11 +247,14 @@ public class GalleryActivity extends Activity implements OnClickListener,
 	@Override
 	public void onClick(View item, View widget, int position, int which,
 			boolean isCheck) {
-		mSelect.put(position, isCheck);
-
+		mSelect.put(mImageList.get(position).getId(), isCheck);
+		if (isCheck) {
+			mDelLl.setBackgroundColor(getResources()
+					.getColor(R.color.blue_loding));
+		}
 		boolean isHasAllSelect = true;
 		boolean isHasSelect = true;
-		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
+		for (Map.Entry<String, Boolean> entry : mSelect.entrySet()) {
 			if (!entry.getValue()) {
 				isHasAllSelect = false;
 			}
@@ -281,13 +262,9 @@ public class GalleryActivity extends Activity implements OnClickListener,
 				isHasSelect = true;
 			}
 		}
-		if (!isHasAllSelect) {
-			mSubmitLl.setBackgroundColor(getResources().getColor(
-					R.color.gray_bg));
-		}
 
 		if (!isHasSelect) {
-			mDelLl.setBackgroundColor(getResources().getColor(R.color.gray_bg));
+			mDelLl.setBackgroundColor(getResources().getColor(R.color.gray_search_bg));
 		}
 
 	}
@@ -297,7 +274,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		if (keyCode == KeyEvent.KEYCODE_BACK
 				&& event.getAction() == KeyEvent.ACTION_DOWN) {
 
-			new AlertDialog(GalleryActivity.this)
+			new AlertDialog(GalleryShowActivity.this)
 					.builder()
 					.setTitle(getString(R.string.prompt))
 					.setMsg(getString(R.string.exit_str))

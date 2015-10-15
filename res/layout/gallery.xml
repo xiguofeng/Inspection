@@ -28,6 +28,18 @@
             android:text="@string/take_picture"
             android:textColor="@color/white"
             android:textSize="@dimen/large_text_size" />
+
+        <TextView
+            android:id="@+id/gallery_submit_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:layout_centerVertical="true"
+            android:padding="8dip"
+            android:text="@string/submit"
+            android:textColor="@color/white"
+            android:textSize="@dimen/medium_text_size" />
     </RelativeLayout>
 
     <com.xgf.inspection.ui.view.CustomGridView
@@ -47,7 +59,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/red_title_bg"
         android:orientation="horizontal" >
 
         <LinearLayout
@@ -55,35 +66,35 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center"
-            android:background="@color/blue_loding" >
+            android:background="@color/gray_search_bg"
+            android:gravity="center" >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:padding="8dip"
+                android:padding="10dip"
                 android:text="@string/del"
-                android:textColor="@color/white"
-                android:textSize="@dimen/large_text_size" />
+                android:textColor="@color/black_character"
+                android:textSize="@dimen/middle_text_size" />
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/gallery_bottom_menu_submit_ll"
+            android:id="@+id/gallery_bottom_menu_add_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center"
-            android:background="@color/red_btn_bg" >
+            android:background="@color/red_btn_bg"
+            android:gravity="center" >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:padding="8dip"
-                android:text="@string/submit"
-                android:textColor="@color/white"
-                android:textSize="@dimen/large_text_size" />
+                android:padding="10dip"
+                android:text="@string/add_phote"
+                android:textColor="@color/black_character"
+                android:textSize="@dimen/middle_text_size" />
         </LinearLayout>
     </LinearLayout>
 

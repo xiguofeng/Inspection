@@ -222,6 +222,12 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
+         <activity
+            android:name="com.xgf.inspection.photo.gallery.GalleryShowActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" >
+        </activity>
         <activity
             android:name="com.xgf.inspection.photo.cropimage.CropImage"
             android:configChanges="orientation|keyboardHidden"
