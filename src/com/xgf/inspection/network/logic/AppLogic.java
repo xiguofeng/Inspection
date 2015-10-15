@@ -40,6 +40,7 @@ public class AppLogic {
 			@Override
 			public void run() {
 				try {
+					Log.e("xxx_123", "1");
 					SoapObject rpc = new SoapObject(RequestUrl.NAMESPACE,
 							RequestUrl.record.SendWirePoleCheckRecord);
 
