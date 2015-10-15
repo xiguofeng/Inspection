@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -29,6 +30,7 @@ import com.xgf.inspection.photo.utils.OSUtils;
 import com.xgf.inspection.ui.adapter.GvAdapter;
 import com.xgf.inspection.ui.utils.ListItemClickHelp;
 import com.xgf.inspection.ui.view.CustomGridView;
+import com.xgf.inspection.ui.view.dialog.widget.AlertDialog;
 import com.xgf.inspection.utils.DeviceUuidFactory;
 import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
@@ -154,6 +156,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 								+ String.valueOf(System.currentTimeMillis())
 								+ ".png";
 						mCropHelper.savePhoto(data, localUrl);
+						imageValue.setLocalUrl(localUrl);
 						mImageList.clear();
 						mImageList.addAll(imageList);
 						mImageList.add(imageValue);
@@ -164,6 +167,7 @@ public class GalleryActivity extends Activity implements OnClickListener,
 								+ String.valueOf(System.currentTimeMillis())
 								+ ".png";
 						mCropHelper.savePhoto(data, localUrl);
+						imageValue.setLocalUrl(localUrl);
 						mImageList.set(2, imageValue);
 						isComplete = true;
 						mAdapter.setAddDisappear(true);
@@ -196,12 +200,14 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		for (Map.Entry<Integer, Boolean> entry : mSelect.entrySet()) {
 			if (entry.getValue()) {
 				isHasSelect = true;
-				mImageList.remove(entry.getKey());
 				File file = new File(mImageList.get(entry.getKey())
 						.getLocalUrl());
 				com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+				int index = entry.getKey();
+				mImageList.remove(index);
 			}
 		}
+		mSelect.clear();
 		if (!isHasSelect) {
 			Toast.makeText(mContext, "请选择图片！", Toast.LENGTH_SHORT).show();
 			return;
@@ -210,14 +216,17 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		ArrayList<ImageValue> imageList = new ArrayList<ImageValue>();
 		for (int i = 0; i < mImageList.size(); i++) {
 			imageList.add(mImageList.get(i));
+			mSelect.put(i, false);
 		}
 
 		mImageList.clear();
 		mImageList.addAll(imageList);
+		mImageList.add(mAddImageValue);
 		if (isHasSelect) {
 			isComplete = false;
 			mAdapter.setAddDisappear(false);
 		}
+		mAdapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -261,4 +270,37 @@ public class GalleryActivity extends Activity implements OnClickListener,
 		}
 
 	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK
+				&& event.getAction() == KeyEvent.ACTION_DOWN) {
+
+			new AlertDialog(GalleryActivity.this)
+					.builder()
+					.setTitle(getString(R.string.prompt))
+					.setMsg(getString(R.string.exit_str))
+					.setPositiveButton(getString(R.string.confirm),
+							new OnClickListener() {
+								@Override
+								public void onClick(View v) {
+									File file = new File(OSUtils
+											.getSdCardDirectory() + "/ins/");
+									com.xgf.inspection.photo.utils.FileUtils
+											.deleteAllFiles(file);
+									finish();
+								}
+							})
+					.setNegativeButton(getString(R.string.cancal),
+							new OnClickListener() {
+								@Override
+								public void onClick(View v) {
+
+								}
+							}).show();
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
 }

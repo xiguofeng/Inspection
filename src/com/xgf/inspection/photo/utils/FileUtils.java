@@ -305,7 +305,7 @@ public class FileUtils {
 		if (file.isDirectory()) {
 			File[] childFile = file.listFiles();
 			if (childFile == null || childFile.length == 0) {
-				file.delete();
+				// file.delete();
 				return;
 			}
 			for (File f : childFile) {

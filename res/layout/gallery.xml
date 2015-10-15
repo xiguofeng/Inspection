@@ -9,7 +9,7 @@
         android:id="@+id/gallery_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/red_title_bg" >
+        android:background="@color/blue_title_bg" >
 
         <ImageView
             android:id="@+id/qr_back_iv"
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:background="@color/black" >
+            android:background="@color/blue_loding" >
 
             <TextView
                 android:layout_width="wrap_content"
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:background="@color/red_title_bg" >
+            android:background="@color/red_btn_bg" >
 
             <TextView
                 android:layout_width="wrap_content"

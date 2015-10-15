@@ -17,7 +17,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/red_title_bg" >
+        android:background="@color/blue_title_bg" >
 
         <ImageView
             android:id="@+id/qr_back_iv"
