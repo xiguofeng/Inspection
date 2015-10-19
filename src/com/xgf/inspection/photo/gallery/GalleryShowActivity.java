@@ -94,6 +94,19 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 				} else {
 					Toast.makeText(mContext, "上传完毕！", Toast.LENGTH_SHORT)
 							.show();
+
+					for (int i = 0; i < mImageList.size(); i++) {
+						File file = new File(mImageList.get(i).getLocalUrl());
+						com.xgf.inspection.photo.utils.FileUtils
+								.deleteAllFiles(file);
+					}
+					progressIndex = 0;
+					mImageList.clear();
+					mAdapter.notifyDataSetChanged();
+					isComplete = false;
+					mAddLl.setBackgroundColor(getResources().getColor(
+							R.color.red_btn_bg));
+
 				}
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
@@ -226,7 +239,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 																R.color.red_btn_bg));
 											}
 										})
-								.setNegativeButton(getString(R.string.cancal),
+								.setNegativeButton("否",
 										new OnClickListener() {
 											@Override
 											public void onClick(View v) {

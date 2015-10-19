@@ -76,6 +76,9 @@ public class CropHelper {
 		}
 		intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(temp));
 		mActivity.startActivityForResult(intent, HEAD_FROM_CAMERA);
+		//ADD
+		//mActivity.startActivityForResult(intent, HEAD_SAVE_PHOTO);
+
 	}
 
 	public void startAlbum() {
