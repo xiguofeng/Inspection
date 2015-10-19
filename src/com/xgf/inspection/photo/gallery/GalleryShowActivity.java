@@ -72,8 +72,29 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 			int what = msg.what;
 			switch (what) {
 			case AppLogic.SEND_RECORD_SUC: {
-				AppLogic.SerarchWirePoleCheckRecord(mContext, mHandler,
-						mSerialNumber);
+				if (null != mProgressDialog && mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+				if (progressIndex < 2) {
+					progressIndex++;
+					mProgressDialog = ProgressDialog.show(
+							GalleryShowActivity.this, " ", "正在上传第"
+									+ (progressIndex + 1) + "张照片", true);
+					mProgressDialog.show();
+
+					AppLogic.SendWirePoleCheckRecord(
+							mContext,
+							mHandler,
+							mDeviceUuid,
+							mQrCode,
+							mSerialNumber,
+							photeIndex[progressIndex],
+							ImageUtils.Bitmap2StrByBase64(mImageList.get(
+									progressIndex).getBitmap()));
+				} else {
+					Toast.makeText(mContext, "上传完毕！", Toast.LENGTH_SHORT)
+							.show();
+				}
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
 				break;
@@ -83,22 +104,6 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 			}
 
 			case AppLogic.SEARCH_RECORD_SUC: {
-				if (null != mProgressDialog && mProgressDialog.isShowing()) {
-					mProgressDialog.dismiss();
-				}
-				mProgressDialog = ProgressDialog.show(GalleryShowActivity.this,
-						" ", "正在上传第" + progressIndex + 1 + "张照片", true);
-				mProgressDialog.show();
-
-				AppLogic.SendWirePoleCheckRecord(
-						mContext,
-						mHandler,
-						mDeviceUuid,
-						mQrCode,
-						mSerialNumber,
-						photeIndex[progressIndex],
-						ImageUtils.Bitmap2StrByBase64(mImageList.get(
-								progressIndex).getBitmap()));
 
 			}
 			case AppLogic.SEARCH_RECORD_FAIL: {
@@ -212,9 +217,13 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 																	.getLocalUrl());
 													com.xgf.inspection.photo.utils.FileUtils
 															.deleteAllFiles(file);
-													mImageList.remove(i);
-
 												}
+												mImageList.clear();
+												mAdapter.notifyDataSetChanged();
+												isComplete = false;
+												mAddLl.setBackgroundColor(getResources()
+														.getColor(
+																R.color.red_btn_bg));
 											}
 										})
 								.setNegativeButton(getString(R.string.cancal),

@@ -105,9 +105,7 @@ public class AppLogic {
 
 	private static void parseSendWirePoleCheckRecordData(String response,
 			Handler handler) {
-		int index = response.indexOf("result");
-		response = response.substring(index);
-		if (response.contains("2")) {
+		if (response.equals("2")) {
 			handler.sendEmptyMessage(SEND_RECORD_SUC);
 		} else {
 			handler.sendEmptyMessage(SEND_RECORD_FAIL);
