@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -34,9 +35,14 @@ import com.xgf.inspection.ui.view.dialog.widget.AlertDialog;
 import com.xgf.inspection.utils.DeviceUuidFactory;
 import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
+import com.xgf.inspection.utils.NetUtils;
 
 public class GalleryShowActivity extends Activity implements OnClickListener,
 		ListItemClickHelp {
+
+	private String[] photeIndex = { "photeIndexFirst", "photeIndexSecond",
+			"photeIndexThird" };
+	private int progressIndex = 0;
 
 	private CropHelper mCropHelper;
 
@@ -53,7 +59,11 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 	private HashMap<String, Boolean> mSelect = new HashMap<String, Boolean>();
 	private boolean isComplete = false;
 
+	private String mDeviceUuid;
+	private String mSerialNumber;
 	private String mQrCode;
+
+	private ProgressDialog mProgressDialog;
 
 	Handler mHandler = new Handler() {
 
@@ -61,13 +71,44 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		public void handleMessage(Message msg) {
 			int what = msg.what;
 			switch (what) {
-
 			case AppLogic.SEND_RECORD_SUC: {
+				AppLogic.SerarchWirePoleCheckRecord(mContext, mHandler,
+						mSerialNumber);
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
 				break;
 			}
 			case AppLogic.SEND_RECORD_EXCEPTION: {
+				break;
+			}
+
+			case AppLogic.SEARCH_RECORD_SUC: {
+				if (null != mProgressDialog && mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+				mProgressDialog = ProgressDialog.show(GalleryShowActivity.this,
+						" ", "正在上传第" + progressIndex + 1 + "张照片", true);
+				mProgressDialog.show();
+
+				AppLogic.SendWirePoleCheckRecord(
+						mContext,
+						mHandler,
+						mDeviceUuid,
+						mQrCode,
+						mSerialNumber,
+						photeIndex[progressIndex],
+						ImageUtils.Bitmap2StrByBase64(mImageList.get(
+								progressIndex).getBitmap()));
+
+			}
+			case AppLogic.SEARCH_RECORD_FAIL: {
+				break;
+			}
+			case AppLogic.SEARCH_RECORD_EXCEPTION: {
+				break;
+			}
+
+			case AppLogic.NET_ERROR: {
 				break;
 			}
 
@@ -151,8 +192,44 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 
 					if (mImageList.size() >= 3) {
 						isComplete = true;
-						mAddLl.setBackgroundColor(getResources()
-								.getColor(R.color.gray_search_bg));
+						mAddLl.setBackgroundColor(getResources().getColor(
+								R.color.gray_search_bg));
+					}
+					if (isComplete) {
+						new AlertDialog(GalleryShowActivity.this)
+								.builder()
+								.setTitle(getString(R.string.prompt))
+								.setMsg("是否重拍？")
+								.setPositiveButton(getString(R.string.confirm),
+										new OnClickListener() {
+											@Override
+											public void onClick(View v) {
+												for (int i = 0; i < mImageList
+														.size(); i++) {
+													File file = new File(
+															mImageList
+																	.get(i)
+																	.getLocalUrl());
+													com.xgf.inspection.photo.utils.FileUtils
+															.deleteAllFiles(file);
+													mImageList.remove(i);
+
+												}
+											}
+										})
+								.setNegativeButton(getString(R.string.cancal),
+										new OnClickListener() {
+											@Override
+											public void onClick(View v) {
+												if (NetUtils
+														.checkNetworkConnection(mContext)
+														&& NetUtils
+																.isWifiCon(mContext)) {
+													submint();
+												}
+											}
+										}).show();
+
 					}
 					mAdapter.initCheck();
 					mAdapter.notifyDataSetChanged();
@@ -166,13 +243,19 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 
 	private void submint() {
 		if (isComplete) {
+			mProgressDialog = ProgressDialog.show(GalleryShowActivity.this,
+					" ", "正在上传第" + progressIndex + 1 + "张照片", true);
+			mProgressDialog.show();
+
 			DeviceUuidFactory deviceUuidFactory = new DeviceUuidFactory(
 					mContext);
-			AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
-					deviceUuidFactory.uuid.toString(), mQrCode, String
-							.valueOf(System.currentTimeMillis()), "phote_one",
-					ImageUtils
-							.Bitmap2StrByBase64(mImageList.get(0).getBitmap()));
+			mDeviceUuid = deviceUuidFactory.uuid.toString();
+			mSerialNumber = String.valueOf(System.currentTimeMillis());
+
+			AppLogic.SendWirePoleCheckRecord(mContext, mHandler, mDeviceUuid,
+					mQrCode, mSerialNumber, photeIndex[progressIndex],
+					ImageUtils.Bitmap2StrByBase64(mImageList.get(progressIndex)
+							.getBitmap()));
 		}
 
 	}
@@ -217,8 +300,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		if (isHasSelect) {
 			isComplete = false;
 			mAdapter.setAddDisappear(false);
-			mAddLl.setBackgroundColor(getResources()
-					.getColor(R.color.red_btn_bg));
+			mAddLl.setBackgroundColor(getResources().getColor(
+					R.color.red_btn_bg));
 		}
 		mAdapter.initCheck();
 		mAdapter.notifyDataSetChanged();
@@ -249,8 +332,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 			boolean isCheck) {
 		mSelect.put(mImageList.get(position).getId(), isCheck);
 		if (isCheck) {
-			mDelLl.setBackgroundColor(getResources()
-					.getColor(R.color.blue_loding));
+			mDelLl.setBackgroundColor(getResources().getColor(
+					R.color.blue_loding));
 		}
 		boolean isHasAllSelect = true;
 		boolean isHasSelect = true;
@@ -264,7 +347,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		}
 
 		if (!isHasSelect) {
-			mDelLl.setBackgroundColor(getResources().getColor(R.color.gray_search_bg));
+			mDelLl.setBackgroundColor(getResources().getColor(
+					R.color.gray_search_bg));
 		}
 
 	}
