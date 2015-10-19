@@ -253,7 +253,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 	private void submint() {
 		if (isComplete) {
 			mProgressDialog = ProgressDialog.show(GalleryShowActivity.this,
-					" ", "正在上传第" + progressIndex + 1 + "张照片", true);
+					" ", "正在上传第" + (progressIndex + 1) + "张照片", true);
 			mProgressDialog.show();
 
 			DeviceUuidFactory deviceUuidFactory = new DeviceUuidFactory(
