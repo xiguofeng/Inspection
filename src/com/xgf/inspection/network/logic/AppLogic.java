@@ -15,6 +15,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -179,6 +180,83 @@ public class AppLogic {
 			}
 		} catch (JSONException e) {
 			handler.sendEmptyMessage(SEND_RECORD_EXCEPTION);
+		}
+	}
+
+	public static void SendWirePoleCheckRecordByService(final Context context,
+			final Handler handler, final String UserPhoneCode,
+			final String QRcode, final String SerialNumber,
+			final String FileSN, final String FileContent) {
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				if (NetUtils.checkNetworkConnection(context)) {
+
+					try {
+						SoapObject rpc = new SoapObject(RequestUrl.NAMESPACE,
+								RequestUrl.record.SendWirePoleCheckRecord);
+
+						rpc.addProperty("UserPhoneCode",
+								URLEncoder.encode(UserPhoneCode, "UTF-8"));
+						rpc.addProperty("QRcode",
+								URLEncoder.encode(QRcode, "UTF-8"));
+						rpc.addProperty("SerialNumber",
+								URLEncoder.encode(SerialNumber, "UTF-8"));
+						rpc.addProperty("FileSN",
+								URLEncoder.encode(FileSN, "UTF-8"));
+						rpc.addProperty("FileContent",
+								URLEncoder.encode(FileContent, "UTF-8"));
+
+						AndroidHttpTransport ht = new AndroidHttpTransport(
+								RequestUrl.HOST_URL);
+
+						SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
+								SoapEnvelope.VER11);
+
+						envelope.bodyOut = rpc;
+						envelope.dotNet = true;
+						envelope.setOutputSoapObject(rpc);
+
+						ht.call(RequestUrl.NAMESPACE + "/"
+								+ RequestUrl.record.SendWirePoleCheckRecord,
+								envelope);
+
+						SoapObject so = (SoapObject) envelope.bodyIn;
+
+						String resultStr = so.getProperty(0).toString();
+						Log.e("xxx_SendWirePoleCheckRecord_ByService_resultStr",
+								resultStr);
+
+						if (!TextUtils.isEmpty(resultStr)) {
+							parseSendWirePoleCheckRecordByServiceData(
+									resultStr, handler, SerialNumber);
+						}
+
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (XmlPullParserException e) {
+						e.printStackTrace();
+					}
+				} else {
+					handler.sendEmptyMessage(NET_ERROR);
+				}
+			}
+		}).start();
+	}
+
+	private static void parseSendWirePoleCheckRecordByServiceData(
+			String response, Handler handler, String SerialNumber) {
+		if (response.equals("2")) {
+			Message message = new Message();
+			message.obj = SerialNumber;
+			message.what = SEND_RECORD_SUC;
+			handler.sendMessage(message);
+		} else {
+			handler.sendEmptyMessage(SEND_RECORD_FAIL);
 		}
 	}
 
