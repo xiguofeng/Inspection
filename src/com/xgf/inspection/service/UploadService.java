@@ -3,6 +3,7 @@ package com.xgf.inspection.service;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.app.Service;
 import android.content.Context;
@@ -10,12 +11,16 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 
-import com.xgf.inspection.entity.ImageValue;
+import com.xgf.inspection.entity.UploadValue;
 import com.xgf.inspection.network.logic.AppLogic;
+import com.xgf.inspection.utils.FileHelper;
 import com.xgf.inspection.utils.FileUtil;
+import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
+import com.xgf.inspection.utils.JsonUtils;
 
 public class UploadService extends Service {
 
@@ -24,7 +29,7 @@ public class UploadService extends Service {
 	private String[] photeIndex = { "photeIndexFirst", "photeIndexSecond",
 			"photeIndexThird" };
 
-	private ArrayList<ImageValue> mImageList = new ArrayList<ImageValue>();
+	private ArrayList<UploadValue> mUploadValueList = new ArrayList<UploadValue>();
 
 	private String mDeviceUuid;
 	private String mSerialNumber;
@@ -41,34 +46,8 @@ public class UploadService extends Service {
 			int what = msg.what;
 			switch (what) {
 			case AppLogic.SEND_RECORD_SUC: {
-				failNum = 0;
-
-				AppLogic.SendWirePoleCheckRecord(
-						mContext,
-						mHandler,
-						mDeviceUuid,
-						mQrCode,
-						mSerialNumber,
-						photeIndex[progressIndex],
-						ImageUtils.Bitmap2StrByBase64(mImageList.get(
-								progressIndex).getBitmap()));
-
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
-				if (failNum < 2) {
-					failNum++;
-
-					AppLogic.SendWirePoleCheckRecord(
-							mContext,
-							mHandler,
-							mDeviceUuid,
-							mQrCode,
-							mSerialNumber,
-							photeIndex[progressIndex],
-							ImageUtils.Bitmap2StrByBase64(mImageList.get(
-									progressIndex).getBitmap()));
-				}
-
 				break;
 			}
 			case AppLogic.SEND_RECORD_EXCEPTION: {
@@ -110,14 +89,27 @@ public class UploadService extends Service {
 		flags = START_STICKY;
 		try {
 			Log.e("xxx_start_upload", "1");
-			String jsonArrayStr = FileUtil.read(mContext, "no_upload.json");
-			JSONArray jsonArray;
-			if (null != jsonArrayStr) {
+			FileHelper.createSDFile("noupload.txt");
+			String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+			JSONArray jsonArray = new JSONArray();
+			if (!TextUtils.isEmpty(jsonArrayStr)) {
 				jsonArray = new JSONArray(jsonArrayStr);
-			} else {
-				jsonArray = new JSONArray();
 			}
-			Log.e("xxx_no_upload", jsonArray.toString());
+			Log.e("xxx_jsonArray", jsonArray.toString());
+			int size = jsonArray.length();
+			mUploadValueList.clear();
+			Log.e("xxx_jsonArray_size", ""+size);
+			for (int i = 0; i < size; i++) {
+				JSONObject uploadJsonObject = jsonArray.getJSONObject(i);
+				UploadValue upload = (UploadValue) JsonUtils.fromJsonToJava(
+						uploadJsonObject, UploadValue.class);
+
+				AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
+						upload.getUserPhoneCode(), upload.getQRcode(),
+						upload.getSerialNumber(), upload.getFileSN(),
+						upload.getFileContent());
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

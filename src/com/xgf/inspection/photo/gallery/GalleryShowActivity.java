@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -38,6 +39,7 @@ import com.xgf.inspection.ui.utils.ListItemClickHelp;
 import com.xgf.inspection.ui.view.CustomGridView;
 import com.xgf.inspection.ui.view.dialog.widget.AlertDialog;
 import com.xgf.inspection.utils.DeviceUuidFactory;
+import com.xgf.inspection.utils.FileHelper;
 import com.xgf.inspection.utils.FileUtil;
 import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
@@ -359,23 +361,29 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 
 	private void noUploadDataSave() {
 		try {
-			String jsonArrayStr = FileUtil.read(mContext, "no_upload.json");
+			FileHelper.createSDFile("noupload.txt");
+			String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+			Log.e("xxx_gallery_jsonArrayStr", "gallery_jsonArrayStr"
+					+ jsonArrayStr);
 			JSONArray jsonArray;
-			if (null != jsonArrayStr) {
+			if (!TextUtils.isEmpty(jsonArrayStr)) {
 				jsonArray = new JSONArray(jsonArrayStr);
 			} else {
 				jsonArray = new JSONArray();
 			}
+			Log.e("xxx_gallery_jsonArray", jsonArray.toString());
 			for (int i = 0; i < mImageList.size(); i++) {
 				JSONObject jsonObject = new JSONObject();
 				jsonObject.put("UserPhoneCode", mDeviceUuid);
-				jsonObject.put("QRcode", mDeviceUuid);
+				jsonObject.put("QRcode", mQrCode);
 				jsonObject.put("SerialNumber", mSerialNumber);
 				jsonObject.put("FileSN", photeIndex[i]);
 				jsonObject.put("FileContent", mImageList.get(i).getBase64Str());
 				jsonArray.put(jsonObject);
 			}
-			FileUtil.save(mContext, "no_upload.json", jsonArray.toString());
+			FileHelper.writeSDFile(jsonArray.toString(), "noupload.txt");
+
+			Log.e("xxx_gallery_save", jsonArray.toString());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
