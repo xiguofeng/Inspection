@@ -62,7 +62,8 @@ public class FileHelper {
 	 */
 	public static void writeSDFile(String str, String fileName) {
 		try {
-			FileWriter fw = new FileWriter(OSUtils.getSdCardDirectory() + "/ins/" + fileName);
+			FileWriter fw = new FileWriter(OSUtils.getSdCardDirectory()
+					+ "/ins/" + fileName);
 			File f = new File(OSUtils.getSdCardDirectory() + "/ins/" + fileName);
 			fw.write(str);
 			FileOutputStream os = new FileOutputStream(f);
@@ -73,6 +74,17 @@ public class FileHelper {
 			fw.flush();
 			fw.close();
 			System.out.println(fw);
+		} catch (Exception e) {
+		}
+	}
+
+	public static void writeSDFileNew(String str, String fileName) {
+		try {
+			FileOutputStream fout = new FileOutputStream(
+					OSUtils.getSdCardDirectory() + "/ins/" + fileName);
+			byte[] bytes = str.getBytes();
+			fout.write(bytes);
+			fout.close();
 		} catch (Exception e) {
 		}
 	}

@@ -95,10 +95,8 @@ public class UploadService extends Service {
 			if (!TextUtils.isEmpty(jsonArrayStr)) {
 				jsonArray = new JSONArray(jsonArrayStr);
 			}
-			Log.e("xxx_jsonArray", jsonArray.toString());
 			int size = jsonArray.length();
 			mUploadValueList.clear();
-			Log.e("xxx_jsonArray_size", ""+size);
 			for (int i = 0; i < size; i++) {
 				JSONObject uploadJsonObject = jsonArray.getJSONObject(i);
 				UploadValue upload = (UploadValue) JsonUtils.fromJsonToJava(

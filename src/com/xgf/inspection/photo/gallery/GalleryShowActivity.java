@@ -363,15 +363,12 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		try {
 			FileHelper.createSDFile("noupload.txt");
 			String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
-			Log.e("xxx_gallery_jsonArrayStr", "gallery_jsonArrayStr"
-					+ jsonArrayStr);
 			JSONArray jsonArray;
 			if (!TextUtils.isEmpty(jsonArrayStr)) {
 				jsonArray = new JSONArray(jsonArrayStr);
 			} else {
 				jsonArray = new JSONArray();
 			}
-			Log.e("xxx_gallery_jsonArray", jsonArray.toString());
 			for (int i = 0; i < mImageList.size(); i++) {
 				JSONObject jsonObject = new JSONObject();
 				jsonObject.put("UserPhoneCode", mDeviceUuid);
@@ -381,9 +378,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 				jsonObject.put("FileContent", mImageList.get(i).getBase64Str());
 				jsonArray.put(jsonObject);
 			}
-			FileHelper.writeSDFile(jsonArray.toString(), "noupload.txt");
-
-			Log.e("xxx_gallery_save", jsonArray.toString());
+			FileHelper.writeSDFileNew(jsonArray.toString(), "noupload.txt");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -451,10 +446,10 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 							new OnClickListener() {
 								@Override
 								public void onClick(View v) {
-									// File file = new File(OSUtils
-									// .getSdCardDirectory() + "/ins/");
-									// com.xgf.inspection.photo.utils.FileUtils
-									// .deleteAllFiles(file);
+									File file = new File(OSUtils
+											.getSdCardDirectory() + "/ins/");
+									com.xgf.inspection.photo.utils.FileUtils
+											.deleteAllFiles(file);
 									finish();
 								}
 							})
