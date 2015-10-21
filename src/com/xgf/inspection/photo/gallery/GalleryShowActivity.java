@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -28,11 +32,13 @@ import com.xgf.inspection.entity.ImageValue;
 import com.xgf.inspection.network.logic.AppLogic;
 import com.xgf.inspection.photo.cropimage.CropHelper;
 import com.xgf.inspection.photo.utils.OSUtils;
+import com.xgf.inspection.qrcode.google.zxing.client.CaptureActivity;
 import com.xgf.inspection.ui.adapter.GvShowAdapter;
 import com.xgf.inspection.ui.utils.ListItemClickHelp;
 import com.xgf.inspection.ui.view.CustomGridView;
 import com.xgf.inspection.ui.view.dialog.widget.AlertDialog;
 import com.xgf.inspection.utils.DeviceUuidFactory;
+import com.xgf.inspection.utils.FileUtil;
 import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
 import com.xgf.inspection.utils.NetUtils;
@@ -63,6 +69,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 	private String mSerialNumber;
 	private String mQrCode;
 
+	private int failNum = 0;
+
 	private ProgressDialog mProgressDialog;
 
 	Handler mHandler = new Handler() {
@@ -72,13 +80,14 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 			int what = msg.what;
 			switch (what) {
 			case AppLogic.SEND_RECORD_SUC: {
+				failNum = 0;
 				if (null != mProgressDialog && mProgressDialog.isShowing()) {
 					mProgressDialog.dismiss();
 				}
 				if (progressIndex < 2) {
 					progressIndex++;
 					mProgressDialog = ProgressDialog.show(
-							GalleryShowActivity.this, " ", "正在上传第"
+							GalleryShowActivity.this, "上传照片 ", "正在上传第"
 									+ (progressIndex + 1) + "张照片", true);
 					mProgressDialog.show();
 
@@ -110,6 +119,26 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 				}
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
+				if (failNum < 2) {
+					failNum++;
+					mProgressDialog = ProgressDialog.show(
+							GalleryShowActivity.this, "重新上传" + (failNum + 1)
+									+ "次", "正在上传第" + +(progressIndex + 1)
+									+ "张照片", true);
+					mProgressDialog.show();
+
+					AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
+							mDeviceUuid, mQrCode, mSerialNumber,
+							photeIndex[progressIndex],
+							mImageList.get(progressIndex).getBase64Str());
+				} else {
+					noUploadDataSave();
+					Intent intent = new Intent(GalleryShowActivity.this,
+							CaptureActivity.class);
+					startActivity(intent);
+					finish();
+				}
+
 				break;
 			}
 			case AppLogic.SEND_RECORD_EXCEPTION: {
@@ -206,6 +235,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 					mCropHelper.savePhoto(data, localUrl);
 					imageValue.setId(timeStr);
 					imageValue.setLocalUrl(localUrl);
+					imageValue.setBase64Str(ImageUtils
+							.Bitmap2StrByBase64(imageValue.getBitmap()));
 					mImageList.add(imageValue);
 
 					if (mImageList.size() >= 3) {
@@ -239,18 +270,16 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 																R.color.red_btn_bg));
 											}
 										})
-								.setNegativeButton("否",
-										new OnClickListener() {
-											@Override
-											public void onClick(View v) {
-												if (NetUtils
-														.checkNetworkConnection(mContext)
-														&& NetUtils
-																.isWifiCon(mContext)) {
-													submint();
-												}
-											}
-										}).show();
+								.setNegativeButton("否", new OnClickListener() {
+									@Override
+									public void onClick(View v) {
+										if (NetUtils
+												.checkNetworkConnection(mContext)
+												&& NetUtils.isWifiCon(mContext)) {
+											submint();
+										}
+									}
+								}).show();
 
 					}
 					mAdapter.initCheck();
@@ -276,8 +305,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 
 			AppLogic.SendWirePoleCheckRecord(mContext, mHandler, mDeviceUuid,
 					mQrCode, mSerialNumber, photeIndex[progressIndex],
-					ImageUtils.Bitmap2StrByBase64(mImageList.get(progressIndex)
-							.getBitmap()));
+					mImageList.get(progressIndex).getBase64Str());
 		}
 
 	}
@@ -327,6 +355,33 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		}
 		mAdapter.initCheck();
 		mAdapter.notifyDataSetChanged();
+	}
+
+	private void noUploadDataSave() {
+		try {
+			String jsonArrayStr = FileUtil.read(mContext, "no_upload.json");
+			JSONArray jsonArray;
+			if (null != jsonArrayStr) {
+				jsonArray = new JSONArray(jsonArrayStr);
+			} else {
+				jsonArray = new JSONArray();
+			}
+			for (int i = 0; i < mImageList.size(); i++) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("UserPhoneCode", mDeviceUuid);
+				jsonObject.put("QRcode", mDeviceUuid);
+				jsonObject.put("SerialNumber", mSerialNumber);
+				jsonObject.put("FileSN", photeIndex[i]);
+				jsonObject.put("FileContent", mImageList.get(i).getBase64Str());
+				jsonArray.put(jsonObject);
+			}
+			FileUtil.save(mContext, "no_upload.json", jsonArray.toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override
@@ -388,10 +443,10 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 							new OnClickListener() {
 								@Override
 								public void onClick(View v) {
-									File file = new File(OSUtils
-											.getSdCardDirectory() + "/ins/");
-									com.xgf.inspection.photo.utils.FileUtils
-											.deleteAllFiles(file);
+									// File file = new File(OSUtils
+									// .getSdCardDirectory() + "/ins/");
+									// com.xgf.inspection.photo.utils.FileUtils
+									// .deleteAllFiles(file);
 									finish();
 								}
 							})

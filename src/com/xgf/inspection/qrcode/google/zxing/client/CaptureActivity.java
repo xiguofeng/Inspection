@@ -61,7 +61,6 @@ import com.google.zxing.Result;
 import com.google.zxing.ResultMetadataType;
 import com.google.zxing.ResultPoint;
 import com.xgf.inspection.R;
-import com.xgf.inspection.photo.gallery.GalleryActivity;
 import com.xgf.inspection.photo.gallery.GalleryShowActivity;
 import com.xgf.inspection.qrcode.google.zxing.client.camera.CameraManager;
 import com.xgf.inspection.qrcode.google.zxing.client.history.HistoryItem;
@@ -70,6 +69,7 @@ import com.xgf.inspection.qrcode.google.zxing.client.result.ResultButtonListener
 import com.xgf.inspection.qrcode.google.zxing.client.result.ResultHandler;
 import com.xgf.inspection.qrcode.google.zxing.client.result.ResultHandlerFactory;
 import com.xgf.inspection.qrcode.google.zxing.client.result.supplement.SupplementalInfoRetriever;
+import com.xgf.inspection.service.UploadService;
 
 /**
  * This activity opens the camera and does the actual scanning on a background
@@ -159,6 +159,11 @@ public final class CaptureActivity extends Activity implements
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
+
+		// TODO
+		//add
+		Intent intent = new Intent(getApplicationContext(), UploadService.class);
+		getApplicationContext().startService(intent);
 
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -508,7 +513,8 @@ public final class CaptureActivity extends Activity implements
 			break;
 		}
 
-		Intent intent = new Intent(CaptureActivity.this, GalleryShowActivity.class);
+		Intent intent = new Intent(CaptureActivity.this,
+				GalleryShowActivity.class);
 		intent.putExtra("QrCode", rawResult.getText());
 		startActivity(intent);
 		finish();

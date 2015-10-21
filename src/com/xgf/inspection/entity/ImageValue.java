@@ -3,14 +3,16 @@ package com.xgf.inspection.entity;
 import android.graphics.Bitmap;
 
 public class ImageValue {
-	
+
 	private String id;
 
 	private String url;
-	
+
 	private String localUrl;
-	
+
 	private Bitmap bitmap;
+
+	private String base64Str;
 
 	public String getId() {
 		return id;
@@ -44,9 +46,12 @@ public class ImageValue {
 		this.bitmap = bitmap;
 	}
 
+	public String getBase64Str() {
+		return base64Str;
+	}
 
-
-
-	
+	public void setBase64Str(String base64Str) {
+		this.base64Str = base64Str;
+	}
 
 }
