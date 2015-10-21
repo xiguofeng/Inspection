@@ -87,31 +87,39 @@ public class UploadService extends Service {
 		Log.e("uplooad", "onStartCommand");
 
 		flags = START_STICKY;
-		try {
-			FileHelper.createSDFile("noupload.txt");
-			String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
-			JSONArray jsonArray = new JSONArray();
-			if (!TextUtils.isEmpty(jsonArrayStr)) {
-				jsonArray = new JSONArray(jsonArrayStr);
-			}
-			int size = jsonArray.length();
-			mUploadValueList.clear();
-			for (int i = 0; i < size; i++) {
-				JSONObject uploadJsonObject = jsonArray.getJSONObject(i);
-				UploadValue upload = (UploadValue) JsonUtils.fromJsonToJava(
-						uploadJsonObject, UploadValue.class);
-				mUploadValueList.add(upload);
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					FileHelper.createSDFile("noupload.txt");
+					String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+					JSONArray jsonArray = new JSONArray();
+					if (!TextUtils.isEmpty(jsonArrayStr)) {
+						jsonArray = new JSONArray(jsonArrayStr);
+					}
+					int size = jsonArray.length();
+					mUploadValueList.clear();
+					for (int i = 0; i < size; i++) {
+						JSONObject uploadJsonObject = jsonArray.getJSONObject(i);
+						UploadValue upload = (UploadValue) JsonUtils.fromJsonToJava(
+								uploadJsonObject, UploadValue.class);
+						mUploadValueList.add(upload);
 
-				Log.e("xxx_upload", upload.getSerialNumber());
-				AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
-						upload.getUserPhoneCode(), upload.getQRcode(),
-						upload.getSerialNumber(), upload.getFileSN(),
-						upload.getFileContent());
-			}
+						Log.e("xxx_upload", upload.getSerialNumber());
+						AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
+								upload.getUserPhoneCode(), upload.getQRcode(),
+								upload.getSerialNumber(), upload.getFileSN(),
+								upload.getFileContent());
+					}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+			}
+		}).start();
+		
 		return super.onStartCommand(intent, flags, startId);
 	}
 
