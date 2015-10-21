@@ -118,6 +118,14 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 					mAddLl.setBackgroundColor(getResources().getColor(
 							R.color.red_btn_bg));
 
+					File file = new File(OSUtils.getSdCardDirectory() + "/ins/");
+					com.xgf.inspection.photo.utils.FileUtils
+							.deleteAllFiles(file);
+					Intent intent = new Intent(GalleryShowActivity.this,
+							CaptureActivity.class);
+					startActivity(intent);
+					finish();
+
 				}
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
