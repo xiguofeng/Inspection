@@ -88,7 +88,6 @@ public class UploadService extends Service {
 
 		flags = START_STICKY;
 		try {
-			Log.e("xxx_start_upload", "1");
 			FileHelper.createSDFile("noupload.txt");
 			String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
 			JSONArray jsonArray = new JSONArray();
@@ -101,7 +100,9 @@ public class UploadService extends Service {
 				JSONObject uploadJsonObject = jsonArray.getJSONObject(i);
 				UploadValue upload = (UploadValue) JsonUtils.fromJsonToJava(
 						uploadJsonObject, UploadValue.class);
+				mUploadValueList.add(upload);
 
+				Log.e("xxx_upload", upload.getSerialNumber());
 				AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
 						upload.getUserPhoneCode(), upload.getQRcode(),
 						upload.getSerialNumber(), upload.getFileSN(),
