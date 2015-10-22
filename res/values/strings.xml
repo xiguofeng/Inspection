@@ -18,15 +18,17 @@
 
     <string name="take_picture">拍照上传</string>
     <string name="del">删除</string>
-    <string name="submit">提交</string>
+    <string name="submit">上传提交</string>
     <string name="add">添加</string>
     <string name="add_phote">添加拍照</string>
     <string name="prompt">提示</string>
     <string name="confirm">确定</string>
     <string name="cancal">取消</string>
-   <string name="exit_str">确定要退出吗？</string>
+    <string name="exit_str">确定要退出吗？</string>
+    <string name="manua_upload">手动上传</string>
+    
+    
     <!-- QrCode -->
-
     <string name="app_name">一杆一码</string>
     <string name="qr_code_scan">扫一扫</string>
     <string name="qr_code_ver">扫码鉴定</string>

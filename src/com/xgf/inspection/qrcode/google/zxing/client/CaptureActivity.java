@@ -25,7 +25,9 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
-
+import org.json.JSONArray;
+import org.json.JSONException;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -42,6 +44,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -55,7 +58,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.ResultMetadataType;
@@ -70,6 +72,7 @@ import com.xgf.inspection.qrcode.google.zxing.client.result.ResultHandler;
 import com.xgf.inspection.qrcode.google.zxing.client.result.ResultHandlerFactory;
 import com.xgf.inspection.qrcode.google.zxing.client.result.supplement.SupplementalInfoRetriever;
 import com.xgf.inspection.service.UploadService;
+import com.xgf.inspection.utils.FileHelper;
 
 /**
  * This activity opens the camera and does the actual scanning on a background
@@ -132,6 +135,9 @@ public final class CaptureActivity extends Activity implements
 
 	private ImageView mBackIv;
 
+	private TextView mQrUploadTv;
+	private boolean mIsHasUpload = false;
+
 	ViewfinderView getViewfinderView() {
 		return viewfinderView;
 	}
@@ -160,11 +166,6 @@ public final class CaptureActivity extends Activity implements
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 
-		// TODO
-		//add
-		Intent intent = new Intent(getApplicationContext(), UploadService.class);
-		getApplicationContext().startService(intent);
-
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setContentView(R.layout.capture);
@@ -184,10 +185,53 @@ public final class CaptureActivity extends Activity implements
 			}
 		});
 
+		// TODO
+		// add
+		mQrUploadTv = (TextView) findViewById(R.id.qr_upload_tv);
+		mQrUploadTv.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(getApplicationContext(),
+						UploadService.class);
+				getApplicationContext().startService(intent);
+			}
+		});
+		isHasUpload();
+
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
 		mNowAction = getIntent().getAction();
 		// showHelpOnFirstLaunch();
+	}
+
+	@SuppressLint("ResourceAsColor")
+	private void isHasUpload() {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					FileHelper.createSDFile("noupload.txt");
+					String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+					JSONArray jsonArray = new JSONArray();
+					int size = 0;
+					if (!TextUtils.isEmpty(jsonArrayStr)) {
+						jsonArray = new JSONArray(jsonArrayStr);
+						size = jsonArray.length();
+						if (size > 0) {
+							mIsHasUpload = true;
+							mQrUploadTv.setTextColor(R.color.white);
+						}
+					}
+				} catch (IOException e) {
+				} catch (JSONException e) {
+				} finally {
+					mIsHasUpload = false;
+				}
+
+			}
+		}).start();
 	}
 
 	@Override
