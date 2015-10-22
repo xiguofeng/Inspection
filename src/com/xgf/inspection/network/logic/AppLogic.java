@@ -256,7 +256,10 @@ public class AppLogic {
 			message.what = SEND_RECORD_SUC;
 			handler.sendMessage(message);
 		} else {
-			handler.sendEmptyMessage(SEND_RECORD_FAIL);
+			Message message = new Message();
+			message.obj = SerialNumber;
+			message.what = SEND_RECORD_FAIL;
+			handler.sendMessage(message);
 		}
 	}
 
