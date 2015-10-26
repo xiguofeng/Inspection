@@ -45,11 +45,9 @@ import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
 import com.xgf.inspection.utils.NetUtils;
 
-public class GalleryShowActivity extends Activity implements OnClickListener,
-		ListItemClickHelp {
+public class GalleryShowActivity extends Activity implements OnClickListener, ListItemClickHelp {
 
-	private String[] photeIndex = { "photeIndexFirst", "photeIndexSecond",
-			"photeIndexThird" };
+	private String[] photeIndex = { "photeIndexFirst", "photeIndexSecond", "photeIndexThird" };
 	private int progressIndex = 0;
 
 	private CropHelper mCropHelper;
@@ -88,63 +86,47 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 				}
 				if (progressIndex < 2) {
 					progressIndex++;
-					mProgressDialog = ProgressDialog.show(
-							GalleryShowActivity.this, "上传照片 ", "正在上传第"
-									+ (progressIndex + 1) + "张照片", true);
+					mProgressDialog = ProgressDialog.show(GalleryShowActivity.this, "上传照片 ",
+							"正在上传第" + (progressIndex + 1) + "张照片", true);
 					mProgressDialog.show();
 
-					AppLogic.SendWirePoleCheckRecord(
-							mContext,
-							mHandler,
-							mDeviceUuid,
-							mQrCode,
-							mSerialNumber,
-							photeIndex[progressIndex],
-							ImageUtils.Bitmap2StrByBase64(mImageList.get(
-									progressIndex).getBitmap()));
+					AppLogic.SendWirePoleCheckRecordByHttp(mContext, mHandler, mDeviceUuid, mQrCode, mSerialNumber,
+							photeIndex[progressIndex], mImageList.get(progressIndex).getBase64Str());
 				} else {
-					Toast.makeText(mContext, "上传完毕！", Toast.LENGTH_SHORT)
-							.show();
+					Toast.makeText(mContext, "上传完毕！", Toast.LENGTH_SHORT).show();
 
 					for (int i = 0; i < mImageList.size(); i++) {
 						File file = new File(mImageList.get(i).getLocalUrl());
-						com.xgf.inspection.photo.utils.FileUtils
-								.deleteAllFiles(file);
+						com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
 					}
 					progressIndex = 0;
 					mImageList.clear();
 					mAdapter.notifyDataSetChanged();
 					isComplete = false;
-					mAddLl.setBackgroundColor(getResources().getColor(
-							R.color.red_btn_bg));
+					mAddLl.setBackgroundColor(getResources().getColor(R.color.red_btn_bg));
 
 					File file = new File(OSUtils.getSdCardDirectory() + "/ins/");
-					com.xgf.inspection.photo.utils.FileUtils
-							.deleteAllFiles(file);
-					Intent intent = new Intent(GalleryShowActivity.this,
-							CaptureActivity.class);
+					com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+					Intent intent = new Intent(GalleryShowActivity.this, CaptureActivity.class);
 					startActivity(intent);
 					finish();
 
 				}
+
+				break;
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
 				if (failNum < 2) {
 					failNum++;
-					mProgressDialog = ProgressDialog.show(
-							GalleryShowActivity.this, "重新上传" + (failNum + 1)
-									+ "次", "正在上传第" + +(progressIndex + 1)
-									+ "张照片", true);
+					mProgressDialog = ProgressDialog.show(GalleryShowActivity.this, "重新上传" + (failNum + 1) + "次",
+							"正在上传第" + +(progressIndex + 1) + "张照片", true);
 					mProgressDialog.show();
 
-					AppLogic.SendWirePoleCheckRecord(mContext, mHandler,
-							mDeviceUuid, mQrCode, mSerialNumber,
-							photeIndex[progressIndex],
-							mImageList.get(progressIndex).getBase64Str());
+					AppLogic.SendWirePoleCheckRecord(mContext, mHandler, mDeviceUuid, mQrCode, mSerialNumber,
+							photeIndex[progressIndex], mImageList.get(progressIndex).getBase64Str());
 				} else {
 					noUploadDataSave();
-					Intent intent = new Intent(GalleryShowActivity.this,
-							CaptureActivity.class);
+					Intent intent = new Intent(GalleryShowActivity.this, CaptureActivity.class);
 					startActivity(intent);
 					finish();
 				}
@@ -203,8 +185,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		mImageGv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				// if (position == mImageList.size() - 1) {
 				//
 				// }
@@ -213,8 +194,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 	}
 
 	private void initData() {
-		mCropHelper = new CropHelper(this, OSUtils.getSdCardDirectory()
-				+ "/head.png");
+		mCropHelper = new CropHelper(this, OSUtils.getSdCardDirectory() + "/head.png");
 
 		mQrCode = getIntent().getExtras().getString("QrCode");
 	}
@@ -237,55 +217,37 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 			case CropHelper.HEAD_SAVE_PHOTO:
 				if (data != null && data.getParcelableExtra("data") != null) {
 					ImageValue imageValue = new ImageValue();
-					imageValue.setBitmap((Bitmap) data
-							.getParcelableExtra("data"));
+					imageValue.setBitmap((Bitmap) data.getParcelableExtra("data"));
 					String timeStr = String.valueOf(System.currentTimeMillis());
-					String localUrl = OSUtils.getSdCardDirectory() + "/ins/"
-							+ timeStr + ".png";
+					String localUrl = OSUtils.getSdCardDirectory() + "/ins/" + timeStr + ".png";
 					mCropHelper.savePhoto(data, localUrl);
 					imageValue.setId(timeStr);
 					imageValue.setLocalUrl(localUrl);
-					imageValue.setBase64Str(ImageUtils
-							.Bitmap2StrByBase64(imageValue.getBitmap()));
+					imageValue.setBase64Str(ImageUtils.Bitmap2StrByBase64(imageValue.getBitmap()));
 					mImageList.add(imageValue);
 
 					if (mImageList.size() >= 3) {
 						isComplete = true;
-						mAddLl.setBackgroundColor(getResources().getColor(
-								R.color.gray_search_bg));
+						mAddLl.setBackgroundColor(getResources().getColor(R.color.gray_search_bg));
 					}
 					if (isComplete) {
-						new AlertDialog(GalleryShowActivity.this)
-								.builder()
-								.setTitle(getString(R.string.prompt))
-								.setMsg("是否重拍？")
-								.setPositiveButton(getString(R.string.confirm),
-										new OnClickListener() {
-											@Override
-											public void onClick(View v) {
-												for (int i = 0; i < mImageList
-														.size(); i++) {
-													File file = new File(
-															mImageList
-																	.get(i)
-																	.getLocalUrl());
-													com.xgf.inspection.photo.utils.FileUtils
-															.deleteAllFiles(file);
-												}
-												mImageList.clear();
-												mAdapter.notifyDataSetChanged();
-												isComplete = false;
-												mAddLl.setBackgroundColor(getResources()
-														.getColor(
-																R.color.red_btn_bg));
-											}
-										})
-								.setNegativeButton("否", new OnClickListener() {
+						new AlertDialog(GalleryShowActivity.this).builder().setTitle(getString(R.string.prompt))
+								.setMsg("是否重拍？").setPositiveButton(getString(R.string.confirm), new OnClickListener() {
 									@Override
 									public void onClick(View v) {
-										if (NetUtils
-												.checkNetworkConnection(mContext)
-												&& NetUtils.isWifiCon(mContext)) {
+										for (int i = 0; i < mImageList.size(); i++) {
+											File file = new File(mImageList.get(i).getLocalUrl());
+											com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+										}
+										mImageList.clear();
+										mAdapter.notifyDataSetChanged();
+										isComplete = false;
+										mAddLl.setBackgroundColor(getResources().getColor(R.color.red_btn_bg));
+									}
+								}).setNegativeButton("否", new OnClickListener() {
+									@Override
+									public void onClick(View v) {
+										if (NetUtils.checkNetworkConnection(mContext) && NetUtils.isWifiCon(mContext)) {
 											submint();
 										}
 									}
@@ -304,18 +266,20 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 
 	private void submint() {
 		if (isComplete) {
-			mProgressDialog = ProgressDialog.show(GalleryShowActivity.this,
-					" ", "正在上传第" + (progressIndex + 1) + "张照片", true);
+			mProgressDialog = ProgressDialog.show(GalleryShowActivity.this, " ", "正在上传第" + (progressIndex + 1) + "张照片",
+					true);
 			mProgressDialog.show();
 
-			DeviceUuidFactory deviceUuidFactory = new DeviceUuidFactory(
-					mContext);
+			DeviceUuidFactory deviceUuidFactory = new DeviceUuidFactory(mContext);
 			mDeviceUuid = deviceUuidFactory.uuid.toString();
 			mSerialNumber = String.valueOf(System.currentTimeMillis());
 
-			AppLogic.SendWirePoleCheckRecord(mContext, mHandler, mDeviceUuid,
-					mQrCode, mSerialNumber, photeIndex[progressIndex],
-					mImageList.get(progressIndex).getBase64Str());
+			// AppLogic.SendWirePoleCheckRecord(mContext, mHandler, mDeviceUuid,
+			// mQrCode, mSerialNumber, photeIndex[progressIndex],
+			// mImageList.get(progressIndex).getBase64Str());
+
+			AppLogic.SendWirePoleCheckRecordByHttp(mContext, mHandler, mDeviceUuid, mQrCode, mSerialNumber,
+					photeIndex[progressIndex], mImageList.get(progressIndex).getBase64Str());
 		}
 
 	}
@@ -335,8 +299,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 				for (int i = 0; i < mImageList.size(); i++) {
 					if (mImageList.get(i).getId().equals(id)) {
 						File file = new File(mImageList.get(i).getLocalUrl());
-						com.xgf.inspection.photo.utils.FileUtils
-								.deleteAllFiles(file);
+						com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
 						mImageList.remove(i);
 					}
 				}
@@ -360,38 +323,45 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		if (isHasSelect) {
 			isComplete = false;
 			mAdapter.setAddDisappear(false);
-			mAddLl.setBackgroundColor(getResources().getColor(
-					R.color.red_btn_bg));
+			mAddLl.setBackgroundColor(getResources().getColor(R.color.red_btn_bg));
 		}
 		mAdapter.initCheck();
 		mAdapter.notifyDataSetChanged();
 	}
 
 	private void noUploadDataSave() {
-		try {
-			FileHelper.createSDFile("noupload.txt");
-			String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
-			JSONArray jsonArray;
-			if (!TextUtils.isEmpty(jsonArrayStr)) {
-				jsonArray = new JSONArray(jsonArrayStr);
-			} else {
-				jsonArray = new JSONArray();
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					FileHelper.createSDFile("noupload.txt");
+					String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+					JSONArray jsonArray;
+					if (!TextUtils.isEmpty(jsonArrayStr)) {
+						jsonArray = new JSONArray(jsonArrayStr);
+					} else {
+						jsonArray = new JSONArray();
+					}
+					for (int i = 0; i < mImageList.size(); i++) {
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("UserPhoneCode", mDeviceUuid);
+						jsonObject.put("QRcode", mQrCode);
+						jsonObject.put("SerialNumber", mSerialNumber);
+						jsonObject.put("FileSN", photeIndex[i]);
+						jsonObject.put("FileContent", mImageList.get(i).getBase64Str());
+						jsonArray.put(jsonObject);
+					}
+					FileHelper.writeSDFileNew(jsonArray.toString(), "noupload.txt");
+
+				} catch (JSONException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-			for (int i = 0; i < mImageList.size(); i++) {
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("UserPhoneCode", mDeviceUuid);
-				jsonObject.put("QRcode", mQrCode);
-				jsonObject.put("SerialNumber", mSerialNumber);
-				jsonObject.put("FileSN", photeIndex[i]);
-				jsonObject.put("FileContent", mImageList.get(i).getBase64Str());
-				jsonArray.put(jsonObject);
-			}
-			FileHelper.writeSDFileNew(jsonArray.toString(), "noupload.txt");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		}).start();
 
 	}
 
@@ -416,12 +386,10 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void onClick(View item, View widget, int position, int which,
-			boolean isCheck) {
+	public void onClick(View item, View widget, int position, int which, boolean isCheck) {
 		mSelect.put(mImageList.get(position).getId(), isCheck);
 		if (isCheck) {
-			mDelLl.setBackgroundColor(getResources().getColor(
-					R.color.blue_loding));
+			mDelLl.setBackgroundColor(getResources().getColor(R.color.blue_loding));
 		}
 		boolean isHasAllSelect = true;
 		boolean isHasSelect = true;
@@ -435,39 +403,30 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		}
 
 		if (!isHasSelect) {
-			mDelLl.setBackgroundColor(getResources().getColor(
-					R.color.gray_search_bg));
+			mDelLl.setBackgroundColor(getResources().getColor(R.color.gray_search_bg));
 		}
 
 	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK
-				&& event.getAction() == KeyEvent.ACTION_DOWN) {
+		if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
 
-			new AlertDialog(GalleryShowActivity.this)
-					.builder()
-					.setTitle(getString(R.string.prompt))
+			new AlertDialog(GalleryShowActivity.this).builder().setTitle(getString(R.string.prompt))
 					.setMsg(getString(R.string.exit_str))
-					.setPositiveButton(getString(R.string.confirm),
-							new OnClickListener() {
-								@Override
-								public void onClick(View v) {
-									File file = new File(OSUtils
-											.getSdCardDirectory() + "/ins/");
-									com.xgf.inspection.photo.utils.FileUtils
-											.deleteAllFiles(file);
-									finish();
-								}
-							})
-					.setNegativeButton(getString(R.string.cancal),
-							new OnClickListener() {
-								@Override
-								public void onClick(View v) {
+					.setPositiveButton(getString(R.string.confirm), new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							File file = new File(OSUtils.getSdCardDirectory() + "/ins/");
+							com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+							finish();
+						}
+					}).setNegativeButton(getString(R.string.cancal), new OnClickListener() {
+						@Override
+						public void onClick(View v) {
 
-								}
-							}).show();
+						}
+					}).show();
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);

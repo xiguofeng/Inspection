@@ -85,6 +85,8 @@ import com.xgf.inspection.utils.FileHelper;
  */
 public final class CaptureActivity extends Activity implements
 		SurfaceHolder.Callback {
+	
+	public static final int HASUPLOAD = 1;
 
 	public static final String ORIGIN_FROM_MORE_ACTION = "more";
 	public static final String ORIGIN_FROM_ORDER_STATE_ACTION = "order_state";
@@ -156,6 +158,12 @@ public final class CaptureActivity extends Activity implements
 		public void handleMessage(Message msg) {
 			int what = msg.what;
 			switch (what) {
+			case HASUPLOAD:
+				mQrUploadTv.setTextColor(getResources().getColor(R.color.white));
+				break;
+
+			default:
+				break;
 			}
 
 		}
@@ -221,7 +229,7 @@ public final class CaptureActivity extends Activity implements
 						size = jsonArray.length();
 						if (size > 0) {
 							mIsHasUpload = true;
-							mQrUploadTv.setTextColor(R.color.white);
+							mHandler.sendEmptyMessage(HASUPLOAD);
 						}
 					}
 				} catch (IOException e) {

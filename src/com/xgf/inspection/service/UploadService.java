@@ -131,7 +131,7 @@ public class UploadService extends Service {
 							mUploadValueList.add(upload);
 							Log.e("xxx_upload",
 									"upload" + upload.getSerialNumber());
-							AppLogic.SendWirePoleCheckRecordByService(mContext,
+							AppLogic.SendWirePoleCheckRecordByHttp(mContext,
 									mHandler, upload.getUserPhoneCode(),
 									upload.getQRcode(),
 									upload.getSerialNumber(),
@@ -139,7 +139,6 @@ public class UploadService extends Service {
 						}
 						mTimeHandler.sendEmptyMessageDelayed(TIME_UPDATE,
 								1000 * 60 * 2);
-						FileHelper.deleteSDFile("noupload.txt");
 					}
 
 				} catch (Exception e) {
@@ -197,6 +196,7 @@ public class UploadService extends Service {
 								mUploadValueFailList.get(i).getFileContent());
 						jsonArray.put(jsonObject);
 					}
+					FileHelper.deleteSDFile("noupload.txt");
 					FileHelper.createSDFile("noupload.txt");
 					FileHelper.writeSDFileNew(jsonArray.toString(),
 							"noupload.txt");

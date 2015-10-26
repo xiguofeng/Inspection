@@ -9,6 +9,8 @@ public class RequestUrl {
 
 	public static final String HOST_URL = "http://120.24.239.215/web/WebService.asmx";
 
+	//public static final String HOST_URL = "http://192.168.23.1:55226/DLGL/WebService.asmx";
+	
 	public interface record {
 		/**
 		 * 上传信息
