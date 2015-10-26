@@ -137,6 +137,7 @@ public class AppLogic {
 							.openConnection();
 
 					connection.setDoOutput(true);// 允许连接提交信息
+					connection.setDoInput(true);
 					connection.setRequestMethod("POST");// 提交方式“GET”、“POST”
 					// connection.setRequestProperty("Cookie",
 					// "ibismkhnd9hto8m8j5sj1vg5s5");// 将当前的sessionid一并上传
@@ -145,7 +146,7 @@ public class AppLogic {
 							"application/x-www-form-urlencoded");
 					// connection.setRequestProperty("Content-Length",
 					// "length");
-
+					
 					connection.connect();
 					// POST请求
 					DataOutputStream out = new DataOutputStream(connection
