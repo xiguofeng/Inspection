@@ -47,7 +47,7 @@ import com.xgf.inspection.utils.NetUtils;
 
 public class GalleryShowActivity extends Activity implements OnClickListener, ListItemClickHelp {
 
-	private String[] photeIndex = { "photeIndexFirst", "photeIndexSecond", "photeIndexThird" };
+	private String[] photeIndex = { "1", "2", "3" };
 	private int progressIndex = 0;
 
 	private CropHelper mCropHelper;

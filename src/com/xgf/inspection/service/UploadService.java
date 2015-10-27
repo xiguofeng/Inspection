@@ -26,8 +26,8 @@ public class UploadService extends Service {
 	
 	private Context mContext;
 	
-	private String[] photeIndex = { "photeIndexFirst", "photeIndexSecond",
-			"photeIndexThird" };
+	private String[] photeIndex = { "1", "2",
+			"3" };
 
 	private ArrayList<UploadValue> mUploadValueList = new ArrayList<UploadValue>();
 

@@ -133,6 +133,17 @@ public class AppLogic {
 				try {
 					URL httpurl = new URL(RequestUrl.HOST_URL + "/"
 							+ RequestUrl.record.SendWirePoleCheckRecord);
+
+					String fileBase64 = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAeCAYAAABNChwpAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAq1JREFUeNq8ls9LVFEUx1+m0WStKishcJMUlPZDqslR/ANq5aYfm8oJZyVtpBYVQUXpMltUC1tpBbluGYyCTlgQSOCqhIgyM5WCIZHpe+Dz4PF6k/Pu5Bz4MGfOu+fc77vv3vPeunQ67TlajXiLf1gsuxSp8tytU+yHTtci5QjoKeJXRMARkRS/IUmsYgL8O34GzqvgIqBOnMa/Dx6xukoI6BYbxLh4A+PEutdagB29TODuvZCfYcyaCbDjVi8+i5FAfIRYfdwjWaqAWtEgLvP/YajxLBPzGNNAzqpWLQ6IY2Ib2Ebajr8Df2Mgx47do4haFrtGrQ/E8uKb+Crm8GfxjZwJeB2aoJj9El/EY4qEzWI3xCWxkxWwurshyvImYFhcJPBd9PE8w4rzJYjsA4/J/VX0V9f2yBWxlTHDJiDNkt3iQrs4I3565ZkJ/gRmm8XTwOTXxR3bhAVxm0ZiSSfF6D+WzcWs1hi188xlcxaCp+C56GDDHGRvtPyHyVuo1UztDuaKPIY5dvEUGylbzquW3Cy1pqidW60PzIhW8VIkxAs2Tly7Sm6CWq3ULqkRLYlT4gH/74m9MSa3sXfxB6i1FLcTroib+IUiZ7+YzZLjUWPFtRWn+H0v5mMImCfHrK2cd4GfnHXYA6NrLcCa2HlxAT9s2dAqxhZQG/jOG4t4NPYh8kQM4qeKrID1gU0uAuxDc734GGinu8QQxZvED2giNsQYj5wZaiRdBKQCS2lfOb1iWpxlh9vrt1HswS9wbZqxNYHH0OYioD3wrN+JfrFFTIijfH7N8QbNEJtgTD85Va4CTP1xfLurfZztLnFCTEbkTHKti7GWcy7wOKvjCGimhfoNaYDlHgw0mCgrMKaRHL8BJXjBlSxgUSyIVyT2ECvVFsk5RI0F+Mv+CDAAdsalGjhb1y0AAAAASUVORK5CYII=";
+					StringBuffer requestSb = new StringBuffer();
+					requestSb.append("UserPhoneCode=").append(UserPhoneCode)
+							.append("&QRcode=")
+							.append(URLEncoder.encode(QRcode, "UTF-8"))
+							.append("&SerialNumber=").append(SerialNumber)
+							.append("&FileSN=").append(FileSN)
+							.append("&FileContent=")
+							.append(URLEncoder.encode(fileBase64, "UTF-8"));
+
 					HttpURLConnection connection = (HttpURLConnection) httpurl
 							.openConnection();
 
@@ -144,30 +155,15 @@ public class AppLogic {
 					// 进行编码
 					connection.setRequestProperty("Content-Type",
 							"application/x-www-form-urlencoded");
-					// connection.setRequestProperty("Content-Length",
-					// "length");
+					connection.setRequestProperty("Content-Length",
+							String.valueOf(requestSb.toString().length()));
 
 					connection.connect();
 					// POST请求
 					DataOutputStream out = new DataOutputStream(connection
 							.getOutputStream());
 
-					String fileBase64 = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAeCAYAAABNChwpAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAq1JREFUeNq8ls9LVFEUx1+m0WStKishcJMUlPZDqslR/ANq5aYfm8oJZyVtpBYVQUXpMltUC1tpBbluGYyCTlgQSOCqhIgyM5WCIZHpe+Dz4PF6k/Pu5Bz4MGfOu+fc77vv3vPeunQ67TlajXiLf1gsuxSp8tytU+yHTtci5QjoKeJXRMARkRS/IUmsYgL8O34GzqvgIqBOnMa/Dx6xukoI6BYbxLh4A+PEutdagB29TODuvZCfYcyaCbDjVi8+i5FAfIRYfdwjWaqAWtEgLvP/YajxLBPzGNNAzqpWLQ6IY2Ib2Ebajr8Df2Mgx47do4haFrtGrQ/E8uKb+Crm8GfxjZwJeB2aoJj9El/EY4qEzWI3xCWxkxWwurshyvImYFhcJPBd9PE8w4rzJYjsA4/J/VX0V9f2yBWxlTHDJiDNkt3iQrs4I3565ZkJ/gRmm8XTwOTXxR3bhAVxm0ZiSSfF6D+WzcWs1hi188xlcxaCp+C56GDDHGRvtPyHyVuo1UztDuaKPIY5dvEUGylbzquW3Cy1pqidW60PzIhW8VIkxAs2Tly7Sm6CWq3ULqkRLYlT4gH/74m9MSa3sXfxB6i1FLcTroib+IUiZ7+YzZLjUWPFtRWn+H0v5mMImCfHrK2cd4GfnHXYA6NrLcCa2HlxAT9s2dAqxhZQG/jOG4t4NPYh8kQM4qeKrID1gU0uAuxDc734GGinu8QQxZvED2giNsQYj5wZaiRdBKQCS2lfOb1iWpxlh9vrt1HswS9wbZqxNYHH0OYioD3wrN+JfrFFTIijfH7N8QbNEJtgTD85Va4CTP1xfLurfZztLnFCTEbkTHKti7GWcy7wOKvjCGimhfoNaYDlHgw0mCgrMKaRHL8BJXjBlSxgUSyIVyT2ECvVFsk5RI0F+Mv+CDAAdsalGjhb1y0AAAAASUVORK5CYII=";
-					StringBuffer requestSb = new StringBuffer();
-					requestSb.append("UserPhoneCode=").append(UserPhoneCode)
-							.append("&QRcode=").append(URLEncoder.encode(QRcode, "UTF-8"))
-							.append("&SerialNumber=").append(SerialNumber)
-							.append("&FileSN=").append(FileSN)
-							.append("&FileContent=")
-							.append(URLEncoder.encode(fileBase64, "UTF-8"));
 					Log.e("xxx_fileBase64", requestSb.toString());
-					// Log.e("xxx_FileContent", FileContent.trim());
-					// System.out.print(FileContent.trim());
-					//
-					// String s = "UserPhoneCode=" + UserPhoneCode + "&QRcode="
-					// + "20" + "&SerialNumber=" + "30" + "&FileSN="
-					// + "40" + "&FileContent=" + "50";
-					// Log.e("xxx_s", requestSb.toString());
 					out.writeBytes(requestSb.toString());
 					out.flush();
 					out.close();
