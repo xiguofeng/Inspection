@@ -122,14 +122,16 @@ public class GalleryShowActivity extends Activity implements OnClickListener, Li
 							"正在上传第" + +(progressIndex + 1) + "张照片", true);
 					mProgressDialog.show();
 
-					AppLogic.SendWirePoleCheckRecord(mContext, mHandler, mDeviceUuid, mQrCode, mSerialNumber,
+					AppLogic.SendWirePoleCheckRecordByHttp(mContext, mHandler, mDeviceUuid, mQrCode, mSerialNumber,
 							photeIndex[progressIndex], mImageList.get(progressIndex).getBase64Str());
 				} else {
-					noUploadDataSave();
-					Intent intent = new Intent(GalleryShowActivity.this, CaptureActivity.class);
-					startActivity(intent);
-					finish();
+//					noUploadDataSave();
+//					Intent intent = new Intent(GalleryShowActivity.this, CaptureActivity.class);
+//					startActivity(intent);
+//					finish();
 				}
+				
+				
 
 				break;
 			}
