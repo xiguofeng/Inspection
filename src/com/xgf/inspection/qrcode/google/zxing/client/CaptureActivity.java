@@ -200,6 +200,8 @@ public final class CaptureActivity extends Activity implements
 
 			@Override
 			public void onClick(View v) {
+				mQrUploadTv.setClickable(false);
+				mQrUploadTv.setTextColor(getResources().getColor(R.color.gray_character));
 				Intent intent = new Intent(getApplicationContext(),
 						UploadService.class);
 				getApplicationContext().startService(intent);
@@ -220,8 +222,8 @@ public final class CaptureActivity extends Activity implements
 			@Override
 			public void run() {
 				try {
-					FileHelper.createSDFile("noupload.txt");
-					String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+					FileHelper.createSDFile("insnoupload.txt");
+					String jsonArrayStr = FileHelper.readSDFile("insnoupload.txt");
 					JSONArray jsonArray = new JSONArray();
 					int size = 0;
 					if (!TextUtils.isEmpty(jsonArrayStr)) {
