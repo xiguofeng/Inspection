@@ -1,5 +1,6 @@
 package com.xgf.inspection.service;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -53,6 +54,12 @@ public class UploadService extends Service {
 			case TIME_UPDATE: {
 				if (mUploadFailList.size() > 0) {
 					saveUploadSuc();
+				} else {
+					for (UploadValue uploadValue : mUploadValueList) {
+						File file = new File(uploadValue.getFileLocalUrl());
+						com.xgf.inspection.photo.utils.FileUtils
+								.deleteAllFiles(file);
+					}
 				}
 				for (Bitmap bitmap : mBitmapList) {
 					bitmap.recycle();
@@ -72,15 +79,13 @@ public class UploadService extends Service {
 			int what = msg.what;
 			switch (what) {
 			case AppLogic.SEND_RECORD_SUC: {
-				if (null != msg.obj) {
-					break;
-				}
+				break;
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
 				if (null != msg.obj) {
 					addUploadFail((String) msg.obj);
-					break;
 				}
+				break;
 			}
 			case AppLogic.SEND_RECORD_EXCEPTION: {
 				break;
@@ -127,7 +132,8 @@ public class UploadService extends Service {
 			public void run() {
 				try {
 					FileHelper.createSDFile("insnoupload.txt");
-					String jsonArrayStr = FileHelper.readSDFile("insnoupload.txt");
+					String jsonArrayStr = FileHelper
+							.readSDFile("insnoupload.txt");
 					JSONArray jsonArray = new JSONArray();
 					Log.e("xxx_jsonArrayStr", "jsonArrayStr:" + jsonArrayStr);
 					if (!TextUtils.isEmpty(jsonArrayStr)) {
@@ -140,7 +146,7 @@ public class UploadService extends Service {
 							UploadValue upload = (UploadValue) JsonUtils
 									.fromJsonToJava(uploadJsonObject,
 											UploadValue.class);
-							
+
 							BitmapUtils.setSize(300, 500);
 							Bitmap bitmap = BitmapUtils.getBitmap(upload
 									.getFileLocalUrl());

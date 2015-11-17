@@ -112,9 +112,6 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 					mAddLl.setBackgroundColor(getResources().getColor(
 							R.color.red_btn_bg));
 
-					File file = new File(OSUtils.getSdCardDirectory() + "/ins/");
-					com.xgf.inspection.photo.utils.FileUtils
-							.deleteAllFiles(file);
 					Intent intent = new Intent(GalleryShowActivity.this,
 							CaptureActivity.class);
 					startActivity(intent);
@@ -380,7 +377,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 			public void run() {
 				try {
 					FileHelper.createSDFile("insnoupload.txt");
-					String jsonArrayStr = FileHelper.readSDFile("insnoupload.txt");
+					String jsonArrayStr = FileHelper
+							.readSDFile("insnoupload.txt");
 					JSONArray jsonArray;
 					if (!TextUtils.isEmpty(jsonArrayStr)) {
 						jsonArray = new JSONArray(jsonArrayStr);
@@ -481,10 +479,10 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 							new OnClickListener() {
 								@Override
 								public void onClick(View v) {
-									File file = new File(OSUtils
-											.getSdCardDirectory() + "/ins/");
-									com.xgf.inspection.photo.utils.FileUtils
-											.deleteAllFiles(file);
+									// File file = new File(OSUtils
+									// .getSdCardDirectory() + "/ins/");
+									// com.xgf.inspection.photo.utils.FileUtils
+									// .deleteAllFiles(file);
 									finish();
 								}
 							})
