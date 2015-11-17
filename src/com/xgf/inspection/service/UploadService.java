@@ -170,6 +170,7 @@ public class UploadService extends Service {
 						mTimeHandler.sendEmptyMessageDelayed(TIME_UPDATE,
 								1000 * 60 * 2);
 					}
+					FileHelper.deleteSDFile("insnoupload.txt");
 
 				} catch (Exception e) {
 					e.printStackTrace();
