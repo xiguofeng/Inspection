@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -17,17 +18,18 @@ import android.util.Log;
 
 import com.xgf.inspection.entity.UploadValue;
 import com.xgf.inspection.network.logic.AppLogic;
+import com.xgf.inspection.photo.utils.BitmapUtils;
 import com.xgf.inspection.utils.FileHelper;
+import com.xgf.inspection.utils.ImageUtils;
 import com.xgf.inspection.utils.JsonUtils;
 
 public class UploadService extends Service {
 
 	public static final int TIME_UPDATE = 1;
-	
+
 	private Context mContext;
-	
-	private String[] photeIndex = { "1", "2",
-			"3" };
+
+	private String[] photeIndex = { "1", "2", "3" };
 
 	private ArrayList<UploadValue> mUploadValueList = new ArrayList<UploadValue>();
 
@@ -43,11 +45,18 @@ public class UploadService extends Service {
 
 	private ArrayList<UploadValue> mUploadValueFailList = new ArrayList<UploadValue>();
 
+	private ArrayList<Bitmap> mBitmapList = new ArrayList<Bitmap>();
+
 	private Handler mTimeHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case TIME_UPDATE: {
-				saveUploadSuc();
+				if (mUploadFailList.size() > 0) {
+					saveUploadSuc();
+				}
+				for (Bitmap bitmap : mBitmapList) {
+					bitmap.recycle();
+				}
 				break;
 			}
 			default:
@@ -110,6 +119,8 @@ public class UploadService extends Service {
 		Log.e("xxx_upload", "onStartCommand");
 
 		flags = START_STICKY;
+		mUploadFailList.clear();
+		mUploadValueFailList.clear();
 		new Thread(new Runnable() {
 
 			@Override
@@ -118,6 +129,7 @@ public class UploadService extends Service {
 					FileHelper.createSDFile("noupload.txt");
 					String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
 					JSONArray jsonArray = new JSONArray();
+					Log.e("xxx_jsonArrayStr", "jsonArrayStr:" + jsonArrayStr);
 					if (!TextUtils.isEmpty(jsonArrayStr)) {
 						jsonArray = new JSONArray(jsonArrayStr);
 						int size = jsonArray.length();
@@ -128,6 +140,17 @@ public class UploadService extends Service {
 							UploadValue upload = (UploadValue) JsonUtils
 									.fromJsonToJava(uploadJsonObject,
 											UploadValue.class);
+
+							Bitmap bitmap = BitmapUtils.getBitmap(upload
+									.getFileLocalUrl());
+							if (null != bitmap) {
+								mBitmapList.add(bitmap);
+								upload.setFileContent(ImageUtils
+										.Bitmap2StrByBase64(bitmap));
+							} else {
+								FileHelper.deleteSDFile("noupload.txt");
+								return;
+							}
 							mUploadValueList.add(upload);
 							Log.e("xxx_upload",
 									"upload" + upload.getSerialNumber());
@@ -194,6 +217,8 @@ public class UploadService extends Service {
 								.getFileSN());
 						jsonObject.put("FileContent",
 								mUploadValueFailList.get(i).getFileContent());
+						jsonObject.put("FileLocalUrl", mUploadValueFailList
+								.get(i).getFileLocalUrl());
 						jsonArray.put(jsonObject);
 					}
 					FileHelper.deleteSDFile("noupload.txt");

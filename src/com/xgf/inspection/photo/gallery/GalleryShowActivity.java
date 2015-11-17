@@ -250,11 +250,11 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 						mAddLl.setBackgroundColor(getResources().getColor(
 								R.color.gray_search_bg));
 					}
-					
+
 					mSelect.put(imageValue.getId(), true);
 					mDelLl.setBackgroundColor(getResources().getColor(
 							R.color.blue_loding));
-					
+
 					if (isComplete) {
 						if (NetUtils.networkStatusOK(mContext)) {
 							submint();
@@ -262,6 +262,11 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 							Toast.makeText(mContext, "当前无网络，正在保存数据！",
 									Toast.LENGTH_SHORT).show();
 							noUploadDataSave();
+							Intent intent = new Intent(
+									GalleryShowActivity.this,
+									CaptureActivity.class);
+							startActivity(intent);
+							finish();
 						}
 
 						// new
@@ -382,6 +387,16 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 					} else {
 						jsonArray = new JSONArray();
 					}
+					if (TextUtils.isEmpty(mDeviceUuid)) {
+						DeviceUuidFactory deviceUuidFactory = new DeviceUuidFactory(
+								mContext);
+						mDeviceUuid = deviceUuidFactory.uuid.toString();
+					}
+					if (TextUtils.isEmpty(mSerialNumber)) {
+						mSerialNumber = String.valueOf(System
+								.currentTimeMillis());
+					}
+
 					for (int i = 0; i < mImageList.size(); i++) {
 						JSONObject jsonObject = new JSONObject();
 						jsonObject.put("UserPhoneCode", mDeviceUuid);
@@ -390,6 +405,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 						jsonObject.put("FileSN", photeIndex[i]);
 						jsonObject.put("FileContent", mImageList.get(i)
 								.getBase64Str());
+						jsonObject.put("FileLocalUrl", mImageList.get(i)
+								.getLocalUrl());
 						jsonArray.put(jsonObject);
 					}
 					FileHelper.writeSDFileNew(jsonArray.toString(),

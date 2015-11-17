@@ -11,6 +11,8 @@ public class UploadValue {
 	private String FileSN;
 
 	private String FileContent;
+	
+	private String FileLocalUrl;
 
 	public String getUserPhoneCode() {
 		return UserPhoneCode;
@@ -52,4 +54,13 @@ public class UploadValue {
 		FileContent = fileContent;
 	}
 
+	public String getFileLocalUrl() {
+		return FileLocalUrl;
+	}
+
+	public void setFileLocalUrl(String fileLocalUrl) {
+		FileLocalUrl = fileLocalUrl;
+	};
+
+	
 }
