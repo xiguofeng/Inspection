@@ -67,10 +67,31 @@ public class NetUtils {
 		final android.net.NetworkInfo mobile = connMgr
 				.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-		if (wifi.isAvailable() || mobile.isAvailable()) // getState()方法是查询是否连接了数据网络
+		// getState()方法是查询是否连接了数据网络
+		if (wifi.isAvailable() || mobile.isAvailable()) {
 			return true;
-		else
+		} else {
 			return false;
+		}
+	}
+
+	public static boolean networkStatusOK(Context mContext) {
+		boolean netStatus = false;
+		try {
+			ConnectivityManager connectManager = (ConnectivityManager) mContext
+					.getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo activeNetworkInfo = connectManager
+					.getActiveNetworkInfo();
+			if (activeNetworkInfo != null) {
+				if (activeNetworkInfo.isAvailable()
+						&& activeNetworkInfo.isConnected()) {
+					netStatus = true;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return netStatus;
 	}
 
 }
