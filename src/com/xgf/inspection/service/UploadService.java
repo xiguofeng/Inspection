@@ -126,8 +126,8 @@ public class UploadService extends Service {
 			@Override
 			public void run() {
 				try {
-					FileHelper.createSDFile("noupload.txt");
-					String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+					FileHelper.createSDFile("insnoupload.txt");
+					String jsonArrayStr = FileHelper.readSDFile("insnoupload.txt");
 					JSONArray jsonArray = new JSONArray();
 					Log.e("xxx_jsonArrayStr", "jsonArrayStr:" + jsonArrayStr);
 					if (!TextUtils.isEmpty(jsonArrayStr)) {
@@ -140,7 +140,8 @@ public class UploadService extends Service {
 							UploadValue upload = (UploadValue) JsonUtils
 									.fromJsonToJava(uploadJsonObject,
 											UploadValue.class);
-
+							
+							BitmapUtils.setSize(300, 500);
 							Bitmap bitmap = BitmapUtils.getBitmap(upload
 									.getFileLocalUrl());
 							if (null != bitmap) {
@@ -148,7 +149,7 @@ public class UploadService extends Service {
 								upload.setFileContent(ImageUtils
 										.Bitmap2StrByBase64(bitmap));
 							} else {
-								FileHelper.deleteSDFile("noupload.txt");
+								FileHelper.deleteSDFile("insnoupload.txt");
 								return;
 							}
 							mUploadValueList.add(upload);
@@ -221,10 +222,10 @@ public class UploadService extends Service {
 								.get(i).getFileLocalUrl());
 						jsonArray.put(jsonObject);
 					}
-					FileHelper.deleteSDFile("noupload.txt");
-					FileHelper.createSDFile("noupload.txt");
+					FileHelper.deleteSDFile("insnoupload.txt");
+					FileHelper.createSDFile("insnoupload.txt");
 					FileHelper.writeSDFileNew(jsonArray.toString(),
-							"noupload.txt");
+							"insnoupload.txt");
 					mUploadValueList.clear();
 					mUploadFailList.clear();
 					mUploadValueFailList.clear();

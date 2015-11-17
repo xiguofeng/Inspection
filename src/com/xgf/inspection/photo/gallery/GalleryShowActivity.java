@@ -379,8 +379,8 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 			@Override
 			public void run() {
 				try {
-					FileHelper.createSDFile("noupload.txt");
-					String jsonArrayStr = FileHelper.readSDFile("noupload.txt");
+					FileHelper.createSDFile("insnoupload.txt");
+					String jsonArrayStr = FileHelper.readSDFile("insnoupload.txt");
 					JSONArray jsonArray;
 					if (!TextUtils.isEmpty(jsonArrayStr)) {
 						jsonArray = new JSONArray(jsonArrayStr);
@@ -410,7 +410,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 						jsonArray.put(jsonObject);
 					}
 					FileHelper.writeSDFileNew(jsonArray.toString(),
-							"noupload.txt");
+							"insnoupload.txt");
 
 				} catch (JSONException e) {
 					e.printStackTrace();
