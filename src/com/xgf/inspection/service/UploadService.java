@@ -42,6 +42,8 @@ public class UploadService extends Service {
 	private boolean isComplete = false;
 	private int progressIndex = 0;
 
+	private int uploadNum = 0;
+
 	private ArrayList<String> mUploadFailList = new ArrayList<String>();
 
 	private ArrayList<UploadValue> mUploadValueFailList = new ArrayList<UploadValue>();
@@ -55,14 +57,7 @@ public class UploadService extends Service {
 				if (mUploadFailList.size() > 0) {
 					saveUploadSuc();
 				} else {
-					for (UploadValue uploadValue : mUploadValueList) {
-						File file = new File(uploadValue.getFileLocalUrl());
-						com.xgf.inspection.photo.utils.FileUtils
-								.deleteAllFiles(file);
-					}
-				}
-				for (Bitmap bitmap : mBitmapList) {
-					bitmap.recycle();
+					clearCache();
 				}
 				break;
 			}
@@ -79,6 +74,10 @@ public class UploadService extends Service {
 			int what = msg.what;
 			switch (what) {
 			case AppLogic.SEND_RECORD_SUC: {
+				uploadNum++;
+				if (uploadNum == mUploadValueList.size()) {
+					clearCache();
+				}
 				break;
 			}
 			case AppLogic.SEND_RECORD_FAIL: {
@@ -126,6 +125,7 @@ public class UploadService extends Service {
 		flags = START_STICKY;
 		mUploadFailList.clear();
 		mUploadValueFailList.clear();
+		uploadNum = 0;
 		new Thread(new Runnable() {
 
 			@Override
@@ -168,7 +168,7 @@ public class UploadService extends Service {
 									upload.getFileSN(), upload.getFileContent());
 						}
 						mTimeHandler.sendEmptyMessageDelayed(TIME_UPDATE,
-								1000 * 60 * 2);
+								1000 * 60);
 					}
 					FileHelper.deleteSDFile("insnoupload.txt");
 
@@ -243,5 +243,17 @@ public class UploadService extends Service {
 				}
 			}
 		}).start();
+	}
+
+	private void clearCache() {
+		for (UploadValue uploadValue : mUploadValueList) {
+			File file = new File(uploadValue.getFileLocalUrl());
+			if (file.exists()) {
+				com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+			}
+		}
+		for (Bitmap bitmap : mBitmapList) {
+			bitmap.recycle();
+		}
 	}
 }
