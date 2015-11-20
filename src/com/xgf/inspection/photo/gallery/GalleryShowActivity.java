@@ -254,7 +254,28 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 
 					if (isComplete) {
 						if (NetUtils.networkStatusOK(mContext)) {
-							submint();
+							if (NetUtils.isWifiCon(mContext)) {
+								submint();
+							} else {
+								new AlertDialog(GalleryShowActivity.this)
+										.builder()
+										.setTitle(getString(R.string.prompt))
+										.setMsg("当前为移动数据,是否上传？")
+										.setPositiveButton(
+												getString(R.string.confirm),
+												new OnClickListener() {
+													@Override
+													public void onClick(View v) {
+														submint();
+													}
+												})
+										.setNegativeButton("否",
+												new OnClickListener() {
+													@Override
+													public void onClick(View v) {
+													}
+												}).show();
+							}
 						} else {
 							Toast.makeText(mContext, "当前无网络，正在保存数据！",
 									Toast.LENGTH_SHORT).show();
@@ -267,30 +288,6 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 						}
 
 						// new
-						// AlertDialog(GalleryShowActivity.this).builder().setTitle(getString(R.string.prompt))
-						// .setMsg("是否重拍？").setPositiveButton(getString(R.string.confirm),
-						// new OnClickListener() {
-						// @Override
-						// public void onClick(View v) {
-						// for (int i = 0; i < mImageList.size(); i++) {
-						// File file = new
-						// File(mImageList.get(i).getLocalUrl());
-						// com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
-						// }
-						// mImageList.clear();
-						// mAdapter.notifyDataSetChanged();
-						// isComplete = false;
-						// mAddLl.setBackgroundColor(getResources().getColor(R.color.red_btn_bg));
-						// }
-						// }).setNegativeButton("否", new OnClickListener() {
-						// @Override
-						// public void onClick(View v) {
-						// if (NetUtils.checkNetworkConnection(mContext) &&
-						// NetUtils.isWifiCon(mContext)) {
-						// submint();
-						// }
-						// }
-						// }).show();
 
 					}
 					mAdapter.initChecked();
