@@ -1088,7 +1088,7 @@ public final class CaptureActivity extends Activity implements
 									upload.getFileSN(), upload.getFileContent());
 
 							mTimeHandler.sendEmptyMessageDelayed(TIME_UPDATE,
-									1000 * 60);
+									1000 * 30);
 						}
 					}
 					FileHelper.deleteSDFile("insnoupload.txt");
