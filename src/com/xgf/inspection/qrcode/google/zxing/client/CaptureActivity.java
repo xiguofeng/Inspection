@@ -190,7 +190,8 @@ public final class CaptureActivity extends Activity implements
 			case HASUPLOAD: {
 				mQrUploadTv
 						.setTextColor(getResources().getColor(R.color.white));
-				mQrUploadTv.setClickable(true);
+				//mQrUploadTv.setClickable(true);
+				mIsHasUpload =true;
 				break;
 			}
 			default:
@@ -308,7 +309,6 @@ public final class CaptureActivity extends Activity implements
 			@Override
 			public void onClick(View v) {
 				if (mIsHasUpload) {
-					mQrUploadTv.setClickable(false);
 					mQrUploadTv.setTextColor(getResources().getColor(
 							R.color.gray_character));
 					uploadData();

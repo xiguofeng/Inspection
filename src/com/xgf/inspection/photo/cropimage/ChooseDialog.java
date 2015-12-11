@@ -15,10 +15,12 @@ public class ChooseDialog implements OnClickListener {
 	private Dialog mDialog = null;
 	private Activity mActivity = null;
 	private CropHelper mCropHelper = null;
+	private String mPicUrl;
 
-	public ChooseDialog(Activity act, CropHelper helper) {
+	public ChooseDialog(Activity act, CropHelper helper,String picUrl) {
 		mActivity = act;
 		mCropHelper = helper;
+		mPicUrl=picUrl;
 	}
 
 	public void popSelectDialog() {
@@ -58,7 +60,7 @@ public class ChooseDialog implements OnClickListener {
 		if (viewId == R.id.take_pictures) {
 			clickInCamera();
 		} else if (viewId == R.id.select_photo) {
-			clickInAlbum();
+			clickInAlbum(mPicUrl);
 		}else if (viewId == R.id.select_cancel) {
 			mDialog.dismiss();
 		}
@@ -72,9 +74,9 @@ public class ChooseDialog implements OnClickListener {
 	}
 
 	// 从本地相册
-	public void clickInAlbum() {
+	public void clickInAlbum(String picFileUrl) {
 		if (mDialog != null)
 			mDialog.dismiss();
-		mCropHelper.startAlbum();
+		mCropHelper.startAlbum(picFileUrl);
 	}
 }

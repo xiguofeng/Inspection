@@ -81,10 +81,11 @@ public class CropHelper {
 
 	}
 
-	public void startAlbum() {
+	public void startAlbum(String picFileUrl) {
 		Intent intent = new Intent(Intent.ACTION_PICK, null);
-		intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-				"image/*");
+//		intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//				"image/*");
+		intent.setDataAndType(Uri.parse(picFileUrl), "image/*");
 		mActivity.startActivityForResult(intent, HEAD_FROM_ALBUM);
 	}
 

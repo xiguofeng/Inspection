@@ -46,8 +46,8 @@ import com.xgf.inspection.utils.FileUtils;
 import com.xgf.inspection.utils.ImageUtils;
 import com.xgf.inspection.utils.NetUtils;
 
-public class GalleryShowActivity extends Activity implements OnClickListener,
-		ListItemClickHelp {
+public class GallerySelectShowActivity extends Activity implements
+		OnClickListener, ListItemClickHelp {
 
 	private String[] photeIndex = { "1", "2", "3" };
 	private int progressIndex = 0;
@@ -89,7 +89,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 				if (progressIndex < 2) {
 					progressIndex++;
 					mProgressDialog = ProgressDialog.show(
-							GalleryShowActivity.this, "上传照片 ", "正在上传第"
+							GallerySelectShowActivity.this, "上传照片 ", "正在上传第"
 									+ (progressIndex + 1) + "张照片", true);
 					mProgressDialog.show();
 
@@ -113,7 +113,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 					mAddLl.setBackgroundColor(getResources().getColor(
 							R.color.red_btn_bg));
 
-					Intent intent = new Intent(GalleryShowActivity.this,
+					Intent intent = new Intent(GallerySelectShowActivity.this,
 							CaptureActivity.class);
 					startActivity(intent);
 					finish();
@@ -126,9 +126,9 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 				if (failNum < 2) {
 					failNum++;
 					mProgressDialog = ProgressDialog.show(
-							GalleryShowActivity.this, "重新上传" + (failNum + 1)
-									+ "次", "正在上传第" + +(progressIndex + 1)
-									+ "张照片", true);
+							GallerySelectShowActivity.this, "重新上传"
+									+ (failNum + 1) + "次", "正在上传第"
+									+ +(progressIndex + 1) + "张照片", true);
 					mProgressDialog.show();
 
 					AppLogic.SendWirePoleCheckRecordByHttp(mContext, mHandler,
@@ -137,7 +137,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 							mImageList.get(progressIndex).getBase64Str());
 				} else {
 					noUploadDataSave();
-					Intent intent = new Intent(GalleryShowActivity.this,
+					Intent intent = new Intent(GallerySelectShowActivity.this,
 							CaptureActivity.class);
 					startActivity(intent);
 					finish();
@@ -174,9 +174,9 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.gallery);
+		setContentView(R.layout.select_gallery);
 		FileUtils.makeDirectory(FileUtils.BASE_PATH);
-		mContext = GalleryShowActivity.this;
+		mContext = GallerySelectShowActivity.this;
 		initView();
 		initData();
 	}
@@ -258,7 +258,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 							if (NetUtils.isWifiCon(mContext)) {
 								submint();
 							} else {
-								new AlertDialog(GalleryShowActivity.this)
+								new AlertDialog(GallerySelectShowActivity.this)
 										.builder()
 										.setTitle(getString(R.string.prompt))
 										.setMsg("当前为移动数据,是否上传？")
@@ -282,7 +282,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 									Toast.LENGTH_SHORT).show();
 							noUploadDataSave();
 							Intent intent = new Intent(
-									GalleryShowActivity.this,
+									GallerySelectShowActivity.this,
 									CaptureActivity.class);
 							startActivity(intent);
 							finish();
@@ -303,8 +303,9 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 
 	private void submint() {
 		if (isComplete) {
-			mProgressDialog = ProgressDialog.show(GalleryShowActivity.this,
-					" ", "正在上传第" + (progressIndex + 1) + "张照片", true);
+			mProgressDialog = ProgressDialog.show(
+					GallerySelectShowActivity.this, " ", "正在上传第"
+							+ (progressIndex + 1) + "张照片", true);
 			mProgressDialog.show();
 
 			DeviceUuidFactory deviceUuidFactory = new DeviceUuidFactory(
@@ -471,7 +472,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		if (keyCode == KeyEvent.KEYCODE_BACK
 				&& event.getAction() == KeyEvent.ACTION_DOWN) {
 
-			new AlertDialog(GalleryShowActivity.this)
+			new AlertDialog(GallerySelectShowActivity.this)
 					.builder()
 					.setTitle(getString(R.string.prompt))
 					.setMsg(getString(R.string.exit_str))
