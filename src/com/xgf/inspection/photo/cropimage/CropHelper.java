@@ -58,8 +58,9 @@ public class CropHelper {
 		intent.putExtra("crop", "true");
 		intent.putExtra("aspectX", 1);
 		intent.putExtra("aspectY", 1);
-		intent.putExtra("outputX", 300);
-		intent.putExtra("outputY", 500);
+		//TODO xgf
+		intent.putExtra("outputX", 480);
+		intent.putExtra("outputY", 720);
 		intent.putExtra("scale", true);
 		intent.putExtra("scaleUpIfNeeded", true);
 		intent.putExtra("BWPhoto", mBWPhoto);

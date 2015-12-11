@@ -1073,7 +1073,7 @@ public final class CaptureActivity extends Activity implements
 										.fromJsonToJava(uploadJsonObject,
 												UploadValue.class);
 
-								BitmapUtils.setSize(300, 500);
+								BitmapUtils.setSize(480, 720);
 								Bitmap bitmap = BitmapUtils.getBitmap(upload
 										.getFileLocalUrl());
 								if (null != bitmap) {

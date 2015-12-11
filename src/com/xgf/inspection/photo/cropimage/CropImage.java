@@ -113,14 +113,14 @@ public class CropImage extends MonitoredActivity {
 				// mBitmap = BitmapFactory.decodeStream(is);
 				File file = new File(target.getPath());
 				if (file.isFile()) {
-					BitmapUtils.setSize(300, 500);
+					BitmapUtils.setSize(480, 720);
 					mBitmap = BitmapUtils.getBitmap(target.getPath());
 					if(mBWPhoto){
 						mBitmap = changeImgColor(mBitmap);
 					}
 					BitmapUtils.reset();
 				} else {
-					BitmapUtils.setSize(300, 500);
+					BitmapUtils.setSize(480, 720);
 					ContentResolver cr = getContentResolver();
 					is = cr.openInputStream(target);
 					mBitmap = BitmapUtils.getBitmap(is);
