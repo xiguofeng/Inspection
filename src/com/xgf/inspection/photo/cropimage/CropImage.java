@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
-
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -44,7 +44,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-
 import com.xgf.inspection.R;
 import com.xgf.inspection.photo.utils.BitmapUtils;
 
@@ -548,7 +547,6 @@ public class CropImage extends MonitoredActivity {
 	}
 
 }
-
 class CropImageView extends ImageViewTouchBase {
 	ArrayList<HighlightView> HighlightViews = new ArrayList<HighlightView>();
 	HighlightView mMotionHighlightView = null;
