@@ -251,6 +251,7 @@ public final class CaptureActivity extends Activity implements
 					mProgressDialog.dismiss();
 				}
 				saveUploadFail();
+				clearSucCache();
 				clearBitmap();
 			}
 
@@ -1200,7 +1201,7 @@ public final class CaptureActivity extends Activity implements
 						filePath = filePath.replace("/ins/", "/ins/fail/");
 						File failfile = new File(filePath);
 						if (failfile.exists()) {
-							com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+							com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(failfile);
 						}
 					}
 				}
@@ -1229,7 +1230,7 @@ public final class CaptureActivity extends Activity implements
 					}
 					File failfile = new File(filePath);
 					if (failfile.exists()) {
-						com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+						com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(failfile);
 					}
 				}
 
