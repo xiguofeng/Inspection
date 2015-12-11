@@ -18,6 +18,8 @@ public class FileUtils {
 
 	// 图片存储路径
 	public static final String BASE_PATH = SD_PATH + "/ins";
+	
+	public static final String BASE_FAIL_PATH = SD_PATH + "/ins/fail";
 
 	public static void makeDirectory(String filePath) {
 		File file = null;

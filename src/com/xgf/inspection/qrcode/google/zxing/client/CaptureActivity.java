@@ -88,6 +88,7 @@ import com.xgf.inspection.utils.FileHelper;
 import com.xgf.inspection.utils.FileManager;
 import com.xgf.inspection.utils.ImageUtils;
 import com.xgf.inspection.utils.JsonUtils;
+import com.xgf.inspection.utils.NetUtils;
 
 /**
  * This activity opens the camera and does the actual scanning on a background
@@ -111,7 +112,9 @@ public final class CaptureActivity extends Activity implements
 	private ArrayList<UploadValue> mUploadValueList = new ArrayList<UploadValue>();
 	private ArrayList<String> mUploadFailList = new ArrayList<String>();
 	private ArrayList<UploadValue> mUploadValueFailList = new ArrayList<UploadValue>();
+	private ArrayList<UploadValue> mUploadValueSucList = new ArrayList<UploadValue>();
 	private ArrayList<Bitmap> mBitmapList = new ArrayList<Bitmap>();
+	private ArrayList<Bitmap> mFailBitmapList = new ArrayList<Bitmap>();
 
 	private ProgressDialog mProgressDialog;
 
@@ -190,8 +193,8 @@ public final class CaptureActivity extends Activity implements
 			case HASUPLOAD: {
 				mQrUploadTv
 						.setTextColor(getResources().getColor(R.color.white));
-				//mQrUploadTv.setClickable(true);
-				mIsHasUpload =true;
+				// mQrUploadTv.setClickable(true);
+				mIsHasUpload = true;
 				break;
 			}
 			default:
@@ -264,10 +267,9 @@ public final class CaptureActivity extends Activity implements
 				}
 				if (mUploadFailList.size() > 0) {
 					saveUploadFail();
-					clearBitmap();
-				} else {
-					clearCache();
 				}
+				clearSucCache();
+				clearBitmap();
 				break;
 			}
 			default:
@@ -309,10 +311,7 @@ public final class CaptureActivity extends Activity implements
 			@Override
 			public void onClick(View v) {
 				if (mIsHasUpload) {
-					mQrUploadTv.setTextColor(getResources().getColor(
-							R.color.gray_character));
 					uploadData();
-					mIsHasUpload = !mIsHasUpload;
 				}
 				// Intent intent = new Intent(getApplicationContext(),
 				// UploadService.class);
@@ -1042,64 +1041,82 @@ public final class CaptureActivity extends Activity implements
 	}
 
 	private void uploadData() {
-		mProgressDialog = ProgressDialog.show(mContext, "上传照片 ", "正在上传张照片",
-				true);
-		mProgressDialog.show();
+		if (NetUtils.networkStatusOK(mContext)) {
+			mIsHasUpload = !mIsHasUpload;
+			mQrUploadTv.setTextColor(getResources().getColor(
+					R.color.gray_character));
+			
+			mProgressDialog = ProgressDialog.show(mContext, "上传照片 ", "正在上传张照片",
+					true);
+			mProgressDialog.show();
 
-		mUploadFailList.clear();
-		mUploadValueFailList.clear();
-		uploadNum = 0;
-		new Thread(new Runnable() {
+			mUploadFailList.clear();
+			mUploadValueFailList.clear();
+			uploadNum = 0;
+			new Thread(new Runnable() {
 
-			@Override
-			public void run() {
-				try {
-					JSONArray jsonArray = new JSONArray();
-					Log.e("xxx_jsonArrayStr", "jsonArrayStr:" + mUploadJsonData);
-					if (!TextUtils.isEmpty(mUploadJsonData)) {
-						jsonArray = new JSONArray(mUploadJsonData);
-						int size = jsonArray.length();
-						mUploadValueList.clear();
-						for (int i = 0; i < size; i++) {
-							JSONObject uploadJsonObject = jsonArray
-									.getJSONObject(i);
-							UploadValue upload = (UploadValue) JsonUtils
-									.fromJsonToJava(uploadJsonObject,
-											UploadValue.class);
+				@Override
+				public void run() {
+					try {
+						JSONArray jsonArray = new JSONArray();
+						Log.e("xxx_jsonArrayStr", "jsonArrayStr:"
+								+ mUploadJsonData);
+						if (!TextUtils.isEmpty(mUploadJsonData)) {
+							jsonArray = new JSONArray(mUploadJsonData);
+							int size = jsonArray.length();
+							mUploadValueList.clear();
+							for (int i = 0; i < size; i++) {
+								JSONObject uploadJsonObject = jsonArray
+										.getJSONObject(i);
+								UploadValue upload = (UploadValue) JsonUtils
+										.fromJsonToJava(uploadJsonObject,
+												UploadValue.class);
 
-							BitmapUtils.setSize(300, 500);
-							Bitmap bitmap = BitmapUtils.getBitmap(upload
-									.getFileLocalUrl());
-							if (null != bitmap) {
-								mBitmapList.add(bitmap);
-								upload.setFileContent(ImageUtils
-										.Bitmap2StrByBase64(bitmap));
-							} else {
-								FileHelper.deleteSDFile("insnoupload.txt");
-								return;
+								BitmapUtils.setSize(300, 500);
+								Bitmap bitmap = BitmapUtils.getBitmap(upload
+										.getFileLocalUrl());
+								if (null != bitmap) {
+									mBitmapList.add(bitmap);
+									upload.setFileContent(ImageUtils
+											.Bitmap2StrByBase64(bitmap));
+
+									String filePath = upload.getFileLocalUrl();
+									if (filePath.contains("/ins/")) {
+										filePath = filePath.replace("/ins/",
+												"/ins/fail/");
+										BitmapUtils.saveFile(bitmap, filePath);
+									}
+								} else {
+									FileHelper.deleteSDFile("insnoupload.txt");
+									return;
+								}
+								mUploadValueList.add(upload);
+								Log.e("xxx_upload",
+										"upload" + upload.getSerialNumber());
+								AppLogic.SendWirePoleCheckRecordByHttp(
+										mContext, mUploadHandler,
+										upload.getUserPhoneCode(),
+										upload.getQRcode(),
+										upload.getSerialNumber(),
+										upload.getFileSN(),
+										upload.getFileContent());
+
+								mTimeHandler.sendEmptyMessageDelayed(
+										TIME_UPDATE, 1000 * 30);
 							}
-							mUploadValueList.add(upload);
-							Log.e("xxx_upload",
-									"upload" + upload.getSerialNumber());
-							AppLogic.SendWirePoleCheckRecordByHttp(mContext,
-									mUploadHandler, upload.getUserPhoneCode(),
-									upload.getQRcode(),
-									upload.getSerialNumber(),
-									upload.getFileSN(), upload.getFileContent());
-
-							mTimeHandler.sendEmptyMessageDelayed(TIME_UPDATE,
-									1000 * 30);
 						}
+						FileHelper.deleteSDFile("insnoupload.txt");
+
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					FileHelper.deleteSDFile("insnoupload.txt");
 
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
-
-			}
-		}).start();
-
+			}).start();
+		}else{
+			Toast.makeText(mContext, "当前无网络，无法上传！  ",
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	private void addUploadFail(String SerialNumber) {
@@ -1109,64 +1126,120 @@ public final class CaptureActivity extends Activity implements
 	}
 
 	private void saveUploadFail() {
+		mUploadValueSucList.clear();
+
 		for (int i = 0; i < mUploadValueList.size(); i++) {
 			if (mUploadFailList.contains(mUploadValueList.get(i)
 					.getSerialNumber())) {
 				mUploadValueFailList.add(mUploadValueList.get(i));
+			} else {
+				mUploadValueSucList.add(mUploadValueList.get(i));
 			}
 		}
 
-		new Thread(new Runnable() {
+		try {
+			FileHelper.deleteSDFile("insnoupload.txt");
+			FileHelper.createSDFile("insnoupload.txt");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-			@Override
-			public void run() {
-
-				try {
-					JSONArray jsonArray = new JSONArray();
-					for (int i = 0; i < mUploadValueFailList.size(); i++) {
-						JSONObject jsonObject = new JSONObject();
-						jsonObject.put("UserPhoneCode", mUploadValueFailList
-								.get(i).getUserPhoneCode());
-						jsonObject.put("QRcode", mUploadValueFailList.get(i)
-								.getQRcode());
-						jsonObject.put("SerialNumber", mUploadValueFailList
-								.get(i).getSerialNumber());
-						jsonObject.put("FileSN", mUploadValueFailList.get(i)
-								.getFileSN());
-						jsonObject.put("FileContent",
-								mUploadValueFailList.get(i).getFileContent());
-						jsonObject.put("FileLocalUrl", mUploadValueFailList
-								.get(i).getFileLocalUrl());
-						jsonArray.put(jsonObject);
-					}
-					FileHelper.deleteSDFile("insnoupload.txt");
-					FileHelper.createSDFile("insnoupload.txt");
-					FileManager.write(jsonArray.toString(),
-							OSUtils.getSdCardDirectory()
-									+ "/ins/insnoupload.txt", "UTF-8");
-					mUploadValueList.clear();
-					mUploadFailList.clear();
-					mUploadValueFailList.clear();
-				} catch (JSONException e) {
-					e.printStackTrace();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
+		// new Thread(new Runnable() {
+		//
+		// @Override
+		// public void run() {
+		//
+		// try {
+		// JSONArray jsonArray = new JSONArray();
+		// for (int i = 0; i < mUploadValueFailList.size(); i++) {
+		// JSONObject jsonObject = new JSONObject();
+		// jsonObject.put("UserPhoneCode", mUploadValueFailList
+		// .get(i).getUserPhoneCode());
+		// jsonObject.put("QRcode", mUploadValueFailList.get(i)
+		// .getQRcode());
+		// jsonObject.put("SerialNumber", mUploadValueFailList
+		// .get(i).getSerialNumber());
+		// jsonObject.put("FileSN", mUploadValueFailList.get(i)
+		// .getFileSN());
+		// jsonObject.put("FileContent",
+		// mUploadValueFailList.get(i).getFileContent());
+		// jsonObject.put("FileLocalUrl", mUploadValueFailList
+		// .get(i).getFileLocalUrl());
+		// jsonArray.put(jsonObject);
+		// }
+		// FileHelper.deleteSDFile("insnoupload.txt");
+		// FileHelper.createSDFile("insnoupload.txt");
+		// FileManager.write(jsonArray.toString(),
+		// OSUtils.getSdCardDirectory()
+		// + "/ins/insnoupload.txt", "UTF-8");
+		// mUploadValueList.clear();
+		// mUploadFailList.clear();
+		// mUploadValueFailList.clear();
+		// } catch (JSONException e) {
+		// e.printStackTrace();
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// }).start();
 	}
 
 	private void clearCache() {
-		for (UploadValue uploadValue : mUploadValueList) {
-			File file = new File(uploadValue.getFileLocalUrl());
-			if (file.exists()) {
-				com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				for (UploadValue uploadValue : mUploadValueList) {
+					File file = new File(uploadValue.getFileLocalUrl());
+					if (file.exists()) {
+						com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+					}
+
+					String filePath = uploadValue.getFileLocalUrl();
+					if (filePath.contains("/ins/")) {
+						filePath = filePath.replace("/ins/", "/ins/fail/");
+						File failfile = new File(filePath);
+						if (failfile.exists()) {
+							com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+						}
+					}
+				}
+				for (Bitmap bitmap : mBitmapList) {
+					bitmap.recycle();
+				}
 			}
-		}
-		for (Bitmap bitmap : mBitmapList) {
-			bitmap.recycle();
-		}
-		mBitmapList.clear();
+		}).start();
+		
+	}
+
+	private void clearSucCache() {
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				for (UploadValue uploadValue : mUploadValueSucList) {
+					File file = new File(uploadValue.getFileLocalUrl());
+					if (file.exists()) {
+						com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+					}
+
+					String filePath = uploadValue.getFileLocalUrl();
+					if (filePath.contains("/ins/")) {
+						filePath = filePath.replace("/ins/", "/ins/fail/");
+					}
+					File failfile = new File(filePath);
+					if (failfile.exists()) {
+						com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+					}
+				}
+
+				for (Bitmap bitmap : mBitmapList) {
+					bitmap.recycle();
+				}
+
+				mBitmapList.clear();
+			}
+		}).start();
 	}
 
 	private void clearBitmap() {

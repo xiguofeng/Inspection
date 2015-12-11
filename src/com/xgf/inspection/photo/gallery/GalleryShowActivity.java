@@ -176,6 +176,7 @@ public class GalleryShowActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.gallery);
 		FileUtils.makeDirectory(FileUtils.BASE_PATH);
+		FileUtils.makeDirectory(FileUtils.BASE_FAIL_PATH);
 		mContext = GalleryShowActivity.this;
 		initView();
 		initData();
