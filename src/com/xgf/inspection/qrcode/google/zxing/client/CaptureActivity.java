@@ -16,20 +16,27 @@
 
 package com.xgf.inspection.qrcode.google.zxing.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -58,12 +65,17 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.ResultMetadataType;
 import com.google.zxing.ResultPoint;
 import com.xgf.inspection.R;
+import com.xgf.inspection.entity.UploadValue;
+import com.xgf.inspection.network.logic.AppLogic;
 import com.xgf.inspection.photo.gallery.GalleryShowActivity;
+import com.xgf.inspection.photo.utils.BitmapUtils;
+import com.xgf.inspection.photo.utils.OSUtils;
 import com.xgf.inspection.qrcode.google.zxing.client.camera.CameraManager;
 import com.xgf.inspection.qrcode.google.zxing.client.history.HistoryItem;
 import com.xgf.inspection.qrcode.google.zxing.client.history.HistoryManager;
@@ -73,6 +85,9 @@ import com.xgf.inspection.qrcode.google.zxing.client.result.ResultHandlerFactory
 import com.xgf.inspection.qrcode.google.zxing.client.result.supplement.SupplementalInfoRetriever;
 import com.xgf.inspection.service.UploadService;
 import com.xgf.inspection.utils.FileHelper;
+import com.xgf.inspection.utils.FileManager;
+import com.xgf.inspection.utils.ImageUtils;
+import com.xgf.inspection.utils.JsonUtils;
 
 /**
  * This activity opens the camera and does the actual scanning on a background
@@ -85,7 +100,21 @@ import com.xgf.inspection.utils.FileHelper;
  */
 public final class CaptureActivity extends Activity implements
 		SurfaceHolder.Callback {
-	
+	public static final int TIME_UPDATE = 1;
+
+	private Context mContext;
+
+	private String mUploadJsonData;
+
+	private int uploadSucNum = 0;
+	private int uploadNum = 0;
+	private ArrayList<UploadValue> mUploadValueList = new ArrayList<UploadValue>();
+	private ArrayList<String> mUploadFailList = new ArrayList<String>();
+	private ArrayList<UploadValue> mUploadValueFailList = new ArrayList<UploadValue>();
+	private ArrayList<Bitmap> mBitmapList = new ArrayList<Bitmap>();
+
+	private ProgressDialog mProgressDialog;
+
 	public static final int HASUPLOAD = 1;
 
 	public static final String ORIGIN_FROM_MORE_ACTION = "more";
@@ -158,15 +187,92 @@ public final class CaptureActivity extends Activity implements
 		public void handleMessage(Message msg) {
 			int what = msg.what;
 			switch (what) {
-			case HASUPLOAD:
-				mQrUploadTv.setTextColor(getResources().getColor(R.color.white));
+			case HASUPLOAD: {
+				mQrUploadTv
+						.setTextColor(getResources().getColor(R.color.white));
+				mQrUploadTv.setClickable(true);
 				break;
-
+			}
 			default:
 				break;
 			}
 
 		}
+
+	};
+
+	Handler mUploadHandler = new Handler() {
+
+		@Override
+		public void handleMessage(Message msg) {
+			int what = msg.what;
+			switch (what) {
+			case AppLogic.SEND_RECORD_SUC: {
+				uploadSucNum++;
+				if (uploadSucNum == mUploadValueList.size()) {
+					clearCache();
+				}
+				break;
+			}
+			case AppLogic.SEND_RECORD_FAIL: {
+				if (null != msg.obj) {
+					addUploadFail((String) msg.obj);
+				}
+				break;
+			}
+			case AppLogic.SEND_RECORD_EXCEPTION: {
+				break;
+			}
+
+			case AppLogic.SEARCH_RECORD_SUC: {
+
+			}
+			case AppLogic.SEARCH_RECORD_FAIL: {
+				break;
+			}
+			case AppLogic.SEARCH_RECORD_EXCEPTION: {
+				break;
+			}
+
+			case AppLogic.NET_ERROR: {
+				break;
+			}
+
+			default:
+				break;
+			}
+			uploadNum++;
+			if (uploadNum == mUploadValueList.size()) {
+				if (null != mProgressDialog && mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+				saveUploadFail();
+				clearBitmap();
+			}
+
+		}
+
+	};
+
+	private Handler mTimeHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case TIME_UPDATE: {
+				if (null != mProgressDialog && mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+				if (mUploadFailList.size() > 0) {
+					saveUploadFail();
+					clearBitmap();
+				} else {
+					clearCache();
+				}
+				break;
+			}
+			default:
+				break;
+			}
+		};
 
 	};
 
@@ -177,6 +283,7 @@ public final class CaptureActivity extends Activity implements
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setContentView(R.layout.capture);
+		mContext = CaptureActivity.this;
 
 		hasSurface = false;
 		historyManager = new HistoryManager(this);
@@ -196,15 +303,20 @@ public final class CaptureActivity extends Activity implements
 		// TODO
 		// add
 		mQrUploadTv = (TextView) findViewById(R.id.qr_upload_tv);
-		mQrUploadTv.setOnClickListener(new OnClickListener() {
 
+		mQrUploadTv.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				mQrUploadTv.setClickable(false);
-				mQrUploadTv.setTextColor(getResources().getColor(R.color.gray_character));
-				Intent intent = new Intent(getApplicationContext(),
-						UploadService.class);
-				getApplicationContext().startService(intent);
+				if (mIsHasUpload) {
+					mQrUploadTv.setClickable(false);
+					mQrUploadTv.setTextColor(getResources().getColor(
+							R.color.gray_character));
+					uploadData();
+					mIsHasUpload = !mIsHasUpload;
+				}
+				// Intent intent = new Intent(getApplicationContext(),
+				// UploadService.class);
+				// getApplicationContext().startService(intent);
 			}
 		});
 		isHasUpload();
@@ -223,19 +335,27 @@ public final class CaptureActivity extends Activity implements
 			public void run() {
 				try {
 					FileHelper.createSDFile("insnoupload.txt");
-					String jsonArrayStr = FileHelper.readSDFile("insnoupload.txt");
+					mUploadJsonData = FileManager.read(
+							OSUtils.getSdCardDirectory()
+									+ "/ins/insnoupload.txt", "UTF-8");
 					JSONArray jsonArray = new JSONArray();
 					int size = 0;
-					if (!TextUtils.isEmpty(jsonArrayStr)) {
-						jsonArray = new JSONArray(jsonArrayStr);
+					if (!TextUtils.isEmpty(mUploadJsonData)) {
+						jsonArray = new JSONArray(mUploadJsonData);
 						size = jsonArray.length();
 						if (size > 0) {
 							mIsHasUpload = true;
 							mHandler.sendEmptyMessage(HASUPLOAD);
+						} else {
+							mIsHasUpload = false;
 						}
+					} else {
+						mIsHasUpload = false;
 					}
 				} catch (IOException e) {
+					mIsHasUpload = false;
 				} catch (JSONException e) {
+					mIsHasUpload = false;
 				} finally {
 					mIsHasUpload = false;
 				}
@@ -919,5 +1039,140 @@ public final class CaptureActivity extends Activity implements
 
 	public void drawViewfinder() {
 		viewfinderView.drawViewfinder();
+	}
+
+	private void uploadData() {
+		mProgressDialog = ProgressDialog.show(mContext, "上传照片 ", "正在上传张照片",
+				true);
+		mProgressDialog.show();
+
+		mUploadFailList.clear();
+		mUploadValueFailList.clear();
+		uploadNum = 0;
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					JSONArray jsonArray = new JSONArray();
+					Log.e("xxx_jsonArrayStr", "jsonArrayStr:" + mUploadJsonData);
+					if (!TextUtils.isEmpty(mUploadJsonData)) {
+						jsonArray = new JSONArray(mUploadJsonData);
+						int size = jsonArray.length();
+						mUploadValueList.clear();
+						for (int i = 0; i < size; i++) {
+							JSONObject uploadJsonObject = jsonArray
+									.getJSONObject(i);
+							UploadValue upload = (UploadValue) JsonUtils
+									.fromJsonToJava(uploadJsonObject,
+											UploadValue.class);
+
+							BitmapUtils.setSize(300, 500);
+							Bitmap bitmap = BitmapUtils.getBitmap(upload
+									.getFileLocalUrl());
+							if (null != bitmap) {
+								mBitmapList.add(bitmap);
+								upload.setFileContent(ImageUtils
+										.Bitmap2StrByBase64(bitmap));
+							} else {
+								FileHelper.deleteSDFile("insnoupload.txt");
+								return;
+							}
+							mUploadValueList.add(upload);
+							Log.e("xxx_upload",
+									"upload" + upload.getSerialNumber());
+							AppLogic.SendWirePoleCheckRecordByHttp(mContext,
+									mUploadHandler, upload.getUserPhoneCode(),
+									upload.getQRcode(),
+									upload.getSerialNumber(),
+									upload.getFileSN(), upload.getFileContent());
+
+							mTimeHandler.sendEmptyMessageDelayed(TIME_UPDATE,
+									1000 * 60);
+						}
+					}
+					FileHelper.deleteSDFile("insnoupload.txt");
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
+
+	}
+
+	private void addUploadFail(String SerialNumber) {
+		if (!mUploadFailList.contains(SerialNumber)) {
+			mUploadFailList.add(SerialNumber);
+		}
+	}
+
+	private void saveUploadFail() {
+		for (int i = 0; i < mUploadValueList.size(); i++) {
+			if (mUploadFailList.contains(mUploadValueList.get(i)
+					.getSerialNumber())) {
+				mUploadValueFailList.add(mUploadValueList.get(i));
+			}
+		}
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+
+				try {
+					JSONArray jsonArray = new JSONArray();
+					for (int i = 0; i < mUploadValueFailList.size(); i++) {
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("UserPhoneCode", mUploadValueFailList
+								.get(i).getUserPhoneCode());
+						jsonObject.put("QRcode", mUploadValueFailList.get(i)
+								.getQRcode());
+						jsonObject.put("SerialNumber", mUploadValueFailList
+								.get(i).getSerialNumber());
+						jsonObject.put("FileSN", mUploadValueFailList.get(i)
+								.getFileSN());
+						jsonObject.put("FileContent",
+								mUploadValueFailList.get(i).getFileContent());
+						jsonObject.put("FileLocalUrl", mUploadValueFailList
+								.get(i).getFileLocalUrl());
+						jsonArray.put(jsonObject);
+					}
+					FileHelper.deleteSDFile("insnoupload.txt");
+					FileHelper.createSDFile("insnoupload.txt");
+					FileManager.write(jsonArray.toString(),
+							OSUtils.getSdCardDirectory()
+									+ "/ins/insnoupload.txt", "UTF-8");
+					mUploadValueList.clear();
+					mUploadFailList.clear();
+					mUploadValueFailList.clear();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void clearCache() {
+		for (UploadValue uploadValue : mUploadValueList) {
+			File file = new File(uploadValue.getFileLocalUrl());
+			if (file.exists()) {
+				com.xgf.inspection.photo.utils.FileUtils.deleteAllFiles(file);
+			}
+		}
+		for (Bitmap bitmap : mBitmapList) {
+			bitmap.recycle();
+		}
+		mBitmapList.clear();
+	}
+
+	private void clearBitmap() {
+		for (Bitmap bitmap : mBitmapList) {
+			bitmap.recycle();
+		}
+		mBitmapList.clear();
 	}
 }
